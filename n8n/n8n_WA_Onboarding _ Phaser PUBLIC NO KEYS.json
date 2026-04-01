@@ -1,0 +1,2954 @@
+{
+  "name": "WA_Onboarding | Phaser PUBLIC NO KEYS",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=workout history: {{ JSON.stringify($json.stravaActivities, null, 2) }}\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=---Your Role---\n- You're an AI fitness coach called Airfit.\n- You will craft a fitness program that will always last 3 months.\n- You will work in steps. In this step right now, your primary objective is to break the program down into 3 phases (e.g., ramp up, consolidation, tapper).\n- These phases will serve as reference for a second step, which you will not perform now (I'm just letting you know for context).\n- Each phase must include: (1) objective, (2) weekly structure summary (types of sessions), (3) progression focus, (4) risk to manage, (5) success signals.\n- Besides creating these phases, you will also write a short message welcoming the user to the program and explaining how you'll work together and why you came up with those phases. This should be your output for this step.\n- Based on the user's location, be mindful of recommending outdoor activities in deep winter.\n- Your content will be consumed via email, so include a greeting (hi, hello, hey there...).\n- This is the very first time you're addressing the user, so welcome them to the program and explain what will be done. This interaction shouldn't feel like a cold entry into a list of phases.\n- Use emojies to aid in visual structure (e.g., next to phase names or in a list).\n- If today is before the Program Start Date, picked by the user, that's ok. This phase can be done in advance.\n- You work like a fitness newsletter, sending the user a weekly workout plan every sunday evening, which is covered in another step and you don't need to worry about now.\n\n---Hard Constraints---\n- Don't ever ask the user for input, since this is a one-way communication line.\n- If critical parameters are missing, make explicit assumptions and list them as bullets under ‘Assumptions’.\n- You will keep it to the physical activity domain only, and not make recommendations on adjacent areas, like nutrition.\n\n---Activity Mix---\nStick to the user's preferred activty mix in mind. If there are no activities from the user's preferred mix in the user's history, assume the user is either coming back to that sport, picking it up for the first time or they just don't track that specific activity with Strava. Adjust your recommendations accordingly but let the user know that you are aware. \n\n---User's Number of Workouts per Week:---\nThe priority should be the user's health and health related constraints. Then, the user's desires. If the user selected a higher number of active days than you think is prudent or a highly aggressive goal, call that out, state that your prio is the user's safety and adjust the phases of the program accordingly. \n\n---Your Personality---\n- You will adopt a warm but professional tone. You will avoid verbosity and prefer directness. You are motivating through humor.\n- Healthily dosed sarcasm is appreciated.\n- You will address the user by their first name.\n- To add warmth and gain trust, make references to the user's life context whenever appropriate. It should feel like you're trying to create a bond.\n\n\n---User Parameters---\nUser's Name: {{ $('Webhook').item.json.body.user_name }}\nUser's Goals: {{ $('Webhook').item.json.body.user_goals }}\nUser's Tradeoffs: {{ $('Webhook').item.json.body.trade_offs }}\nUser's Life Context: {{ $('Webhook').item.json.body.user_context }}\nUser's other preferences: {{ $('Webhook').item.json.body.other_preferences }}\n\nUser's Intensity Preference (light<normal<intense): {{ $('Webhook').item.json.body.aggressiveness_preference }}\nUser's Recovery Capacity: {{ $('Webhook').item.json.body.recovery_capacity }}\nUser's OK with weekend sessions: {{ $('Webhook').item.json.body.weekends_on }}\nUser's OK with training twice on same day (when low risk): {{ $('Webhook').item.json.body.can_train_twice_same_day }}\nUser's gym type: {{ $('Webhook').item.json.body.gym_access }}\nUser Experience Level: {{ $('Webhook').item.json.body.experience_level }}\nUser's injury info: {{ $('Webhook').item.json.body.injury_status }}\n\nUser Height in cm: {{ $('Webhook').item.json.body.height_cm }}\nUser Weight in Kg: {{ $('Webhook').item.json.body.weight_kg }}\nUser's Number of Workouts per Week: {{ $('Webhook').item.json.body.days_per_week }}\nUser's Location: {{ $('Webhook').item.json.body.location }}\nUser's Preferred Activities Mix: {{ $('Webhook').item.json.body.activities }}\nUser's goal priority order:{{JSON.stringify($('Webhook').item.json.body.goal_priority_order) }}\nProgram Start Date: {{ $('Webhook').item.json.body.programStart }}\n\n"
+        }
+      },
+      "id": "54962458-5d61-49cd-bb2f-5aef2b4da1a8",
+      "name": "Workout Recommendation Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1968,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.4",
+          "mode": "list",
+          "cachedResultName": "gpt-5.4"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "timeout": 240000
+        }
+      },
+      "id": "4b65ee05-a6c4-444d-8c84-edc919638567",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        32
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "kzwKUrLswfHybB1a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.userEmail }}",
+        "subject": "=Your Airfit Program is Ready!|{{ $('Workout Recommendation Agent').item.json.output.title }}",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Airfit 🦾"
+        }
+      },
+      "id": "e933fd5f-c89f-47d9-8ceb-4332ca198b0f",
+      "name": "Send Workout Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2688,
+        -192
+      ],
+      "webhookId": "77e42895-666e-46b6-b8a0-43903bb30451",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LsX2Mk8ZG2EBq7c8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2-codex",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2-codex"
+        },
+        "builtInTools": {
+          "codeInterpreter": false
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2336,
+        32
+      ],
+      "id": "2d1148ac-4ca4-4524-916b-ff17db17bb12",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "kzwKUrLswfHybB1a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"title\": \"{{ $json.output.title }}\",\n  \"dates\": \"{{ $json.output.dates }}\",\n  \"overview\": \"{{ $json.output.overview }}\",\n  \"assumptions\": {{ JSON.stringify($json.output.assumptions) }},\n  \"phases\": {{ JSON.stringify($json.output.phases) }},\n  \"closing\": \"{{ $json.output.closing }}\"\n}",
+        "options": {
+          "systemMessage": "You are an HTML renderer. Output a single, complete HTML document that matches the provided template and fills it with the provided content.\n\nHard rules:\n- Output ONLY raw HTML. No markdown. No backticks. No explanations.\n- Use EXACTLY the HTML structure and CSS from the template below. Do not add or remove CSS rules. Do not add external assets.\n- Replace template placeholders with the provided content. Do not invent text or add extra sections beyond what the template defines.\n- Convert newline characters in overview, closing, and all inserted text blocks into <br/> tags.\n- Convert markdown bold markers **like this** into <strong>like this</strong>. Do not implement other markdown features.\n- Escape HTML special characters in the content (& < > \" ') before inserting, except for the <br/> and <strong> tags you create.\n- The number of phase cards must equal the number of phases in the input array, in the same order.\n- Each phase card must include: name, dates, objective, weekly structure (sessions_per_week + items + optional_add_ons), progression_focus, risk_to_manage, success_signals.\n- weekly_structure.items, progression_focus, risk_to_manage, success_signals are arrays. Render them as bullet lines with exact format:\n  •&nbsp;{item}<br/>\n  No leading spaces. No blank line before the first bullet. Do not use <ul>/<li>.\n- Render assumptions as 3 labeled lines in this exact order (do NOT output raw keys like session_length:):\n  <span class=\"label\">Session length:</span> {assumptions.session_length}<br/><br/>\n  <span class=\"label\">Winter constraint:</span> {assumptions.winter_constraint}<br/><br/>\n  <span class=\"label\">Strength approach:</span> {assumptions.strength_approach}\n- If a field is missing, render it as an empty string (do not omit sections).\n\nTemplate (do not change):\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <title>Program Email</title>\n  <style>\n    :root { color-scheme: light; }\n    body { margin:0; background:#f6f7f9; font-family: -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif; color:#111; }\n    .container { max-width: 760px; margin: 0 auto; padding: 28px 16px; }\n    .header { background:#fff; border:1px solid #e6e8ee; border-radius:16px; padding: 22px 22px 18px; }\n    h1 { font-size: 28px; line-height:1.15; margin: 0 0 10px; }\n    .meta { color:#4b5563; font-size: 14px; }\n    .section { margin-top: 18px; }\n    .section-title { font-size: 18px; margin: 0 0 10px; }\n    .card { background:#fff; border:1px solid #e6e8ee; border-radius:16px; padding: 18px 18px 14px; margin: 12px 0; }\n    .card h3 { margin: 0 0 8px; font-size: 18px; }\n    .card .dates { color:#4b5563; font-size: 14px; margin-bottom: 10px; }\n    .label { font-weight: 700; }\n    .divider { height:1px; background:#e6e8ee; margin: 18px 0; }\n    .text { white-space: pre-wrap; line-height:1.55; }\n    .footer { color:#6b7280; font-size: 13px; margin-top: 18px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>{{TITLE}}</h1>\n      <div class=\"meta\"><span class=\"label\">Dates:</span> {{DATES}}</div>\n\n      <div class=\"divider\"></div>\n\n      <h2 class=\"section-title\">Overview</h2>\n      <div class=\"text\">{{OVERVIEW_HTML}}</div>\n\n      <div class=\"divider\"></div>\n\n      <h2 class=\"section-title\">Assumptions</h2>\n      <div class=\"text\">{{ASSUMPTIONS_HTML}}</div>\n    </div>\n\n    <div class=\"section\">\n      <h2 class=\"section-title\">Phases</h2>\n\n      {{PHASE_CARDS}}\n\n      <div class=\"divider\"></div>\n\n      <h2 class=\"section-title\">Closing</h2>\n      <div class=\"text\">{{CLOSING_HTML}}</div>\n\n      <div class=\"footer\">— Your coach</div>\n    </div>\n\n  </div>\n</body>\n</html>\n\nPhase card template (repeat for each phase, do not change):\n<div class=\"card\">\n  <h3>{{PHASE_NAME}}</h3>\n  <div class=\"dates\"><span class=\"label\">Dates:</span> {{PHASE_DATES}}</div>\n\n  <div class=\"text\">\n    <span class=\"label\">Objective:</span> {{PHASE_OBJECTIVE_HTML}}<br/><br/>\n    <span class=\"label\">Weekly structure ({{PHASE_SESSIONS_PER_WEEK}} sessions/week):</span><br/>\n    {{PHASE_WEEKLY_ITEMS_HTML}}<br/>\n    <span class=\"label\">Optional add-ons:</span> {{PHASE_OPTIONAL_ADD_ONS_HTML}}<br/><br/>\n\n    <span class=\"label\">Progression focus:</span><br/>\n    {{PHASE_PROGRESSION_FOCUS_HTML}}<br/><br/>\n\n    <span class=\"label\">Risks to manage:</span><br/>\n    {{PHASE_RISK_TO_MANAGE_HTML}}<br/><br/>\n\n    <span class=\"label\">Success signals:</span><br/>\n    {{PHASE_SUCCESS_SIGNALS_HTML}}\n  </div>\n</div>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2336,
+        -192
+      ],
+      "id": "a57ce2e3-ce74-4631-bbd9-999bca6817be",
+      "name": "Formatting Agent"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"title\": \"3-month leaner + fitter build\",\n  \"dates\": \"01 Feb 2026 → 01 May 2026\",\n  \"overview\": \"3-phase plan: (1) build a base without frying you, (2) push the engine (VO₂) while keeping muscle, (3) sharpen the blade and introduce outdoors once Munich warms up. You’re already consistent with lifting + HIIT + Zwift, so the plan keeps 5 purposeful workouts/week (less random hard, more strategic hard).\",\n  \"assumptions\": {\n    \"session_length\": \"Most workouts are 45–70 min.\",\n    \"winter_constraint\": \"Feb + most of Mar stay indoors (gym, Zwift, treadmill). Outdoor running/cycling is introduced in April as temperatures improve in Munich.\",\n    \"strength_approach\": \"No supersets. Strength sessions use straight sets with adequate rest.\"\n  },\n  \"phases\": [\n    {\n      \"name\": \"Phase 1 (🧱 Foundation & Ramp)\",\n      \"dates\": \"01 Feb → 28 Feb\",\n      \"objective\": \"Build a reliable weekly rhythm, boost aerobic base (for fat-loss support + VO₂ later), and maintain strength while you start leaning out.\",\n      \"weekly_structure\": {\n        \"sessions_per_week\": 5,\n        \"items\": [\n          \"2× Strength (Gym, full-body or upper/lower) — straight sets, controlled tempo\",\n          \"1× Zwift intervals (short/medium) — structured, not maximal\",\n          \"1× Zone 2 aerobic (Zwift or treadmill easy) — steady “can talk” pace\",\n          \"1× HIIT (Friday evening) — social suffer-fest\"\n        ],\n        \"optional_add_ons\": \"Optional add-ons that don’t count as workouts: 15–25 min easy spin or a short yoga/mobility flow on 1–2 rest days.\"\n      },\n      \"progression_focus\": [\n        \"Add a little volume (1–2 total sets/week across key lifts) or small load increases while keeping form pristine.\",\n        \"Gradually extend Zone 2 duration (e.g., +5–10 min/week).\",\n        \"Keep HIIT intense but repeatable (finish feeling like you could do 1 more round).\"\n      ],\n      \"risk_to_manage\": [\n        \"Stacking intensity (HIIT + hard Zwift + heavy legs) → fatigue spiral.\",\n        \"Winter + indoor training monotony → going too hard for entertainment.\"\n      ],\n      \"success_signals\": [\n        \"Hitting 5 sessions/week with stable energy and no joint grumbles.\",\n        \"Zwift workouts feel more controlled at the same effort.\",\n        \"Waist trend starts moving without being “flatlined tired” by Thursday.\"\n      ]\n    },\n    {\n      \"name\": \"Phase 2 (🔥 Build & Intensify)\",\n      \"dates\": \"01 Mar → 04 Apr\",\n      \"objective\": \"Turn up conditioning to drive VO₂ up and help body comp, while using minimal-effective-dose strength to keep muscle/shape.\",\n      \"weekly_structure\": {\n        \"sessions_per_week\": 5,\n        \"items\": [\n          \"2× Strength (Gym) — slightly lower total volume than Phase 1, heavier “keep the signal” work\",\n          \"2× Bike quality (Zwift): 1× VO₂/threshold-focused + 1× longer aerobic (Zone 2 / tempo blend depending on fatigue)\",\n          \"1× HIIT Friday — keep it, manage the rest of the week around it\"\n        ],\n        \"optional_add_ons\": \"If you like doubles: occasional AM easy 20 min spin + PM strength on one day—only when recovery feels solid.\"\n      },\n      \"progression_focus\": [\n        \"Progress bike intensity by increasing total time near threshold/VO₂ (often more work rather than harder every session).\",\n        \"Strength: maintain key lifts with low-to-moderate volume; avoid chasing pump/size.\"\n      ],\n      \"risk_to_manage\": [\n        \"Overuse / CNS fatigue from too many redline days (HIIT + VO₂ + heavy legs).\",\n        \"Sleep/restore mismatch (WFH flexibility making training feel available 24/7).\"\n      ],\n      \"success_signals\": [\n        \"VO₂/threshold sessions become more repeatable (less “death-by-interval-3”).\",\n        \"Strength numbers stay mostly stable (or slightly down) but you feel athletic.\",\n        \"Visible leanness changes: sharper midsection outline, better vascularity during sessions.\"\n      ]\n    },\n    {\n      \"name\": \"Phase 3 (✨ Sharpen, Lean-Out & Spring Transition)\",\n      \"dates\": \"05 Apr → 01 May\",\n      \"objective\": \"Hold strength, keep VO₂ climbing, tighten the look while reducing fatigue, and introduce outdoor sessions (weather-permitting) for freshness and easy calorie burn without extra brutality.\",\n      \"weekly_structure\": {\n        \"sessions_per_week\": 5,\n        \"items\": [\n          \"2× Strength (Gym) — crisp, efficient, leave 1–2 reps in the tank\",\n          \"1× HIIT Friday — keep it fun; don’t turn it into a weekly near-death ritual\",\n          \"1× Quality endurance — Zwift threshold or treadmill progression run\",\n          \"1× Outdoor aerobic (preferred) OR indoor fallback: outdoor run/ride (easy/moderate) if conditions are decent; otherwise Zwift Zone 2 / treadmill easy\"\n        ]\n      },\n      \"progression_focus\": [\n        \"Shift from “more work” to “better work”: maintain intensity but trim junk volume.\",\n        \"Add outdoor duration gradually (fresh legs + spring motivation makes it easy to overdo).\"\n      ],\n      \"risk_to_manage\": [\n        \"Spring ego: first sunny day = accidental 2.5h hammerfest.\",\n        \"Letting strength drop too far (still want athletic + defined, not cardio-only skinny).\"\n      ],\n      \"success_signals\": [\n        \"Visibly tighter week to week (waist down, abs showing more consistently).\",\n        \"VO₂ markers up: hard sessions feel smoother; recovery between efforts improves.\",\n        \"Finish the program feeling sharp, not cooked.\"\n      ]\n    }\n  ],\n  \"closing\": \"If you follow the arc build → intensify → sharpen, you’ll be set up to chase the ~11% look with a real shot at visible abs + VO₂ up by May, without turning every session into a motivational crisis after work. Use mornings/afternoons, keep Friday HIIT sacred, and keep winter indoors until Munich behaves.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2112,
+        32
+      ],
+      "id": "b6ae904f-da9e-4c8a-aa82-427c180a5914",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "489386a2-a8b9-4000-8520-99124df4e9a5",
+        "authentication": "headerAuth",
+        "options": {
+          "responseCode": {
+            "values": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1296,
+        -192
+      ],
+      "id": "c67983a3-03a3-4ca3-a300-bc226871653d",
+      "name": "Webhook",
+      "webhookId": "489386a2-a8b9-4000-8520-99124df4e9a5",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "KtG7Ty3aW5xb2N8A",
+          "name": "LA Web App Webhook Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://www.strava.com/api/v3/athlete/activities",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "30"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.body.stravaAccessToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        -192
+      ],
+      "id": "42695334-9981-45df-8f8c-09c2d53780b5",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const activities = $input.all().map((item) => item.json);\n\nconst cleanedData = activities.map((activity) => ({\n  sport_type: activity.sport_type,\n  duration: Math.floor(activity.moving_time / 60),\n  date: activity.start_date,\n  suffer_score: activity.suffer_score,\n  load: activity.kilojoules,\n}));\n\nreturn [{ json: { stravaActivities: cleanedData } }];"
+      },
+      "id": "ae767ada-1971-431f-a9cf-bc7d87e3ba1c",
+      "name": "Clean Strava Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "programs",
+        "dataToSend": "=defineBelow",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_email",
+              "fieldValue": "={{ $('Webhook').item.json.body.userEmail }}"
+            },
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $json.output.title }}"
+            },
+            {
+              "fieldId": "dates",
+              "fieldValue": "={{ $json.output.dates }}"
+            },
+            {
+              "fieldId": "overview",
+              "fieldValue": "={{ $json.output.overview }}"
+            },
+            {
+              "fieldId": "assumptions_session_length",
+              "fieldValue": "={{ $json.output.assumptions.session_length }}"
+            },
+            {
+              "fieldId": "assumptions_winter_constraint",
+              "fieldValue": "={{ $json.output.assumptions.winter_constraint }}"
+            },
+            {
+              "fieldId": "assumptions_strength_approach",
+              "fieldValue": "={{ $json.output.assumptions.strength_approach }}"
+            },
+            {
+              "fieldId": "phase_1_name",
+              "fieldValue": "={{ $json.output.phases[0].name }}"
+            },
+            {
+              "fieldId": "phase_1_dates",
+              "fieldValue": "={{ $json.output.phases[0].dates }}"
+            },
+            {
+              "fieldId": "phase_1_objective",
+              "fieldValue": "={{ $json.output.phases[0].objective }}"
+            },
+            {
+              "fieldId": "phase_1_sessions_per_week",
+              "fieldValue": "={{ $json.output.phases[0].weekly_structure.sessions_per_week }}"
+            },
+            {
+              "fieldId": "phase_1_weekly_items_json",
+              "fieldValue": "={{ $json.output.phases[0].weekly_structure.items }}"
+            },
+            {
+              "fieldId": "phase_1_optional_add_ons",
+              "fieldValue": "={{ $json.output.phases[0].weekly_structure.optional_add_ons }}"
+            },
+            {
+              "fieldId": "phase_1_progression_focus_json",
+              "fieldValue": "={{ $json.output.phases[0].progression_focus }}"
+            },
+            {
+              "fieldId": "phase_1_risk_to_manage_json",
+              "fieldValue": "={{ $json.output.phases[0].risk_to_manage }}"
+            },
+            {
+              "fieldId": "phase_1_success_signals_json",
+              "fieldValue": "={{ $json.output.phases[0].success_signals }}"
+            },
+            {
+              "fieldId": "phase_2_name",
+              "fieldValue": "={{ $json.output.phases[1].name }}"
+            },
+            {
+              "fieldId": "phase_2_dates",
+              "fieldValue": "={{ $json.output.phases[1].dates }}"
+            },
+            {
+              "fieldId": "phase_2_objective",
+              "fieldValue": "={{ $json.output.phases[1].objective }}"
+            },
+            {
+              "fieldId": "phase_2_sessions_per_week",
+              "fieldValue": "={{ $json.output.phases[1].weekly_structure.sessions_per_week }}"
+            },
+            {
+              "fieldId": "phase_2_weekly_items_json",
+              "fieldValue": "={{ $json.output.phases[1].weekly_structure.items }}"
+            },
+            {
+              "fieldId": "phase_2_optional_add_ons",
+              "fieldValue": "={{ $json.output.phases[1].weekly_structure.optional_add_ons }}"
+            },
+            {
+              "fieldId": "phase_2_progression_focus_json",
+              "fieldValue": "={{ $json.output.phases[1].progression_focus }}"
+            },
+            {
+              "fieldId": "phase_2_risk_to_manage_json",
+              "fieldValue": "={{ $json.output.phases[1].risk_to_manage }}"
+            },
+            {
+              "fieldId": "phase_2_success_signals_json",
+              "fieldValue": "={{ $json.output.phases[1].success_signals }}"
+            },
+            {
+              "fieldId": "phase_3_name",
+              "fieldValue": "={{ $json.output.phases[2].name }}"
+            },
+            {
+              "fieldId": "phase_3_dates",
+              "fieldValue": "={{ $json.output.phases[2].dates }}"
+            },
+            {
+              "fieldId": "phase_3_objective",
+              "fieldValue": "={{ $json.output.phases[2].objective }}"
+            },
+            {
+              "fieldId": "phase_3_sessions_per_week",
+              "fieldValue": "={{ $json.output.phases[2].weekly_structure.sessions_per_week }}"
+            },
+            {
+              "fieldId": "phase_3_weekly_items_json",
+              "fieldValue": "={{ $json.output.phases[2].weekly_structure.items }}"
+            },
+            {
+              "fieldId": "phase_3_optional_add_ons",
+              "fieldValue": "={{ $json.output.phases[2].weekly_structure.optional_add_ons }}"
+            },
+            {
+              "fieldId": "phase_3_progression_focus_json",
+              "fieldValue": "={{ $json.output.phases[2].progression_focus }}"
+            },
+            {
+              "fieldId": "phase_3_risk_to_manage_json",
+              "fieldValue": "={{ $json.output.phases[2].risk_to_manage }}"
+            },
+            {
+              "fieldId": "phase_3_success_signals_json",
+              "fieldValue": "={{ $json.output.phases[2].success_signals }}"
+            },
+            {
+              "fieldId": "closing",
+              "fieldValue": "={{ $json.output.closing }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        -400
+      ],
+      "id": "e2fb4767-058c-473a-af14-afed4455d2b6",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "danieldaniel19.app.n8n.cloud",
+            "user-agent": "curl/8.7.1",
+            "content-length": "1199",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "98.249.156.48",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9e1f5e3b4eded484-MIA",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-api-key": "la-wa-webhook-feb-apoLLo",
+            "x-forwarded-for": "98.249.156.48, 104.23.248.192",
+            "x-forwarded-host": "danieldaniel19.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-106-cd585c94f-xqmhk",
+            "x-is-trusted": "yes",
+            "x-real-ip": "98.249.156.48"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "userId": "a1ad1cd3-3fa8-4f96-a2df-ff8629e85acf",
+            "user_name": "Daniel",
+            "user_goals": "I want to drop bf from ca 15-6% to 11-2% and drop a couple of kgs, while keeping my overall physique.",
+            "trade_offs": "Fine with deprioritizing muscle growth in favor of looking leaner.",
+            "user_context": "Work from home, flexible schedule, gym in afternoons, Friday HIIT with friends.",
+            "other_preferences": "No supersets. No gym on weekends.",
+            "aggressiveness_preference": "Intense",
+            "recovery_capacity": "Normal",
+            "weekends_on": true,
+            "can_train_twice_same_day": true,
+            "gym_access": "Full gym",
+            "experience_level": "10+ years",
+            "injury_status": "Slight discomfort on outside of left knee with high cardio volume.",
+            "height_cm": 175,
+            "weight_kg": 70,
+            "days_per_week": 5,
+            "location": "Munich, Germany",
+            "activities": [
+              "Bouldering",
+              "Cycling",
+              "HIIT",
+              "Running",
+              "Strength"
+            ],
+            "goal_priority_order": {
+              "1": "Leanness",
+              "2": "Endurance",
+              "3": "Strength"
+            },
+            "userEmail": "danielloureiro196@gmail.com",
+            "onboardingVersion": 1,
+            "programStart": "2026-03-29",
+            "stravaAccessToken": "ed9ee9031c172d89ecc5d71cf7de004c3ca8f3e5"
+          },
+          "webhookUrl": "https://danieldaniel19.app.n8n.cloud/webhook-test/onboarding-program",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "HTTP Request": [
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Morning Run",
+          "distance": 5117.2,
+          "moving_time": 1923,
+          "elapsed_time": 1979,
+          "total_elevation_gain": 8.8,
+          "type": "Run",
+          "sport_type": "Run",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17853617528,
+          "start_date": "2026-03-25T13:22:32Z",
+          "start_date_local": "2026-03-25T09:22:32Z",
+          "timezone": "(GMT-05:00) America/New_York",
+          "utc_offset": -14400,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17853617528",
+            "summary_polyline": "omv{CfkhiNFvJFjBBrEBRDFJBlAE|@A^EpA?|@EVDHRBNH~GD^?VHHfAG|BC`A@x@GFFV\\JFbCIb@?r@CtA?H?JF@J?XFz@AXDXEh@@d@BnADh@ANERFnGFb@Ef@@bCDb@C`@@^BlADXEr@Bd@B`DFzBCv@Br@BD`@Jd@@b@D^EZFnACf@O|@?NCLS@SEaBBw@CgAK]Cs@EyDBk@A}BEeAAcDHo@@WE]?g@GwA?sAEu@@cEQo@MSKGWB_@CaDFgA?q@HECOQEYGAmDJcEBSDW?UCiBHk@AmA?KAEGA[I_@Aa@Ia@@YEwBAcFIiC?uAMqJ?_BMwJEMGGYIuBFeFDYAIG",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "g11022140",
+          "start_latlng": [
+            25.679828,
+            -80.329207
+          ],
+          "end_latlng": [
+            25.680281,
+            -80.326811
+          ],
+          "average_speed": 2.661,
+          "max_speed": 4.22,
+          "average_watts": 191.4,
+          "max_watts": 283,
+          "weighted_average_watts": 192,
+          "device_watts": true,
+          "kilojoules": 368.1,
+          "has_heartrate": true,
+          "average_heartrate": 165.8,
+          "max_heartrate": 198,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 7.4,
+          "elev_low": 1.2,
+          "upload_id": 18953116100,
+          "upload_id_str": "18953116100",
+          "external_id": "BC6DCF7C-5849-4A08-AFEF-639D95B1FDFB.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 59
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Walk",
+          "distance": 4070.4,
+          "moving_time": 2799,
+          "elapsed_time": 2976,
+          "total_elevation_gain": 14,
+          "type": "Walk",
+          "sport_type": "Walk",
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17795181842,
+          "start_date": "2026-03-20T19:22:04Z",
+          "start_date_local": "2026-03-20T15:22:04Z",
+          "timezone": "(GMT-05:00) America/New_York",
+          "utc_offset": -14400,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 0,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17795181842",
+            "summary_polyline": "}sv{Cl_hiND~BFt@?bAF~A?tDDvCDLNHR?REpA@RFJH@HBnAB`@@tAHxAA|@BJLHX?NFTEVAREN@pAC\\@nAAP@FH?VFPD^BpE@f@DN@VP^`@VH\\DfBA|AHfCAdABb@BH?TW|A_@hAIl@BpCF~C?tAGLDR@^DHJBxAEb@Gx@DTDR?JBi@@WCaABWDmADeCBWD}@?WBu@CiCJo@CUMIQC_@AwA@gAB[Lw@^uDCkDI}C@c@EcA?eABMCg@GQCeCEIGAyCHYAIMESEEGAg@@OCAECoACyDC}AESAyCEsA?_DBCFCl@K`@AZBZEFGDQHw@EwE?iAOyFA_C",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "g11022140",
+          "start_latlng": [
+            25.68026,
+            -80.326885
+          ],
+          "end_latlng": [
+            25.68028,
+            -80.326607
+          ],
+          "average_speed": 1.454,
+          "max_speed": 2.6,
+          "has_heartrate": true,
+          "average_heartrate": 102.4,
+          "max_heartrate": 113,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 6.8,
+          "elev_low": 0.8,
+          "upload_id": 18894244352,
+          "upload_id_str": "18894244352",
+          "external_id": "4D30F28C-EB17-4771-BC30-5A0528C1F9C2.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 1,
+          "has_kudoed": false,
+          "suffer_score": 6
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Ride (gravel)",
+          "distance": 16707.3,
+          "moving_time": 3774,
+          "elapsed_time": 6437,
+          "total_elevation_gain": 100,
+          "type": "Ride",
+          "sport_type": "GravelRide",
+          "workout_type": null,
+          "device_name": "Garmin Edge 830",
+          "id": 17650817836,
+          "start_date": "2026-03-08T13:30:50Z",
+          "start_date_local": "2026-03-08T14:30:50Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 4,
+          "kudos_count": 6,
+          "comment_count": 0,
+          "athlete_count": 2,
+          "photo_count": 0,
+          "map": {
+            "id": "a17650817836",
+            "summary_polyline": "yt}cHagbeAmATu@f@qAlAaAl@y@bBW\\Mb@i@fAe@ZiFzAoAVqAf@}Bn@aDz@iGlAu@LyA@aHa@qAi@oDkCaCiC}CuDwCeF{@kAq@i@SaCi@yAYa@iAw@MU{BgBkAuASc@[iAaAiC_AsAc@cAKGoAiByAaBqB{ESu@E]@aBFeBE}EM_@Gu@]aAa@iBGm@k@cBY}AC{BPuCs@eC[s@eA_BSk@WqAq@MeAJWJy@r@m@p@o@lASl@Yl@[f@c@NcB`BoAh@w@f@cBvAgBX}Bt@^?l@SaEk@{@j@yBh@}@\\GJo@L]I_@g@oAeAq@qARuEGMBUB@P[?g@_@aCMgEHgBc@aHQe@Ik@o@sAEYSY{@mDCkACOp@i@rAoB?[c@}@{@m@i@KiC{B]c@}@m@S]o@UwAM{@}@gAq@s@K{@s@u@Mc@ZaAI{@k@aB[m@Yw@c@c@g@WKcCUiBN]Cw@[W?MKaAG_BeBgD_Cc@m@u@wA}@gCk@_As@aBUYi@YYg@Wu@c@{@]g@iAeAu@oCs@gDcAsBI_ADk@FOAi@Fa@?sBYgC?a@FsALo@Gw@Dg@K_A_@o@u@w@IFEPICG]e@_@SKW?OLkDxFORO?mBqAoBeAcFsEkCoC}@o@_@OaDi@mAi@iBiA}BsBqSmTsAeAuASWDLFZIDa@yA_BmD_Dw@}@_HcGw@m@g@QKKa@yEiBqII_BHkKBiAF_@Ug@wAsAgKmIqJgHkAa@oCe@}A@oBLgAIqAq@eDeDw@i@}D_BmEcAiAIeBa@kEaB}A_AKXQ@tAn@@JKF_@QyAUiAc@sCJmAUu@`@SFqAAy@Ri@BqCn@_@^iChBu@LoAjAq@Vm@b@kAhBe@Pq@Hw@TOKCOV_@XIHNBj@I`ANFT~@LvAfAtGAb@BxA_@fB?^Kl@Bh@OrAClAU|BOf@{@lAa@X}@Xo@^uB~AsBlCiArB}B`DWR[BeAC]KgByCkAgCgAqAcAw@{CmB{@{@oCiBWCUFg@nAOJQ@eJeEqF{BwAgAe@KmFc@}JUyIyAeB?kIaGsAqAg@[cBq@m@MwAC{AJoNcA{GRqAJ{Dt@yHx@_GtAcCToACaDLoIj@YLH`CKXqJvCUV@NXhAFzBNhC?v@IdAPlBPhFT`N",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            47.995903,
+            11.486462
+          ],
+          "end_latlng": [
+            48.108905,
+            11.530648
+          ],
+          "average_speed": 4.427,
+          "max_speed": 11.917,
+          "average_temp": 15,
+          "average_watts": 56,
+          "device_watts": false,
+          "kilojoules": 211.2,
+          "has_heartrate": true,
+          "average_heartrate": 125,
+          "max_heartrate": 181,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 589.8,
+          "elev_low": 542.8,
+          "upload_id": 18749063531,
+          "upload_id_str": "18749063531",
+          "external_id": "garmin_ping_543836961186",
+          "from_accepted_tag": false,
+          "pr_count": 3,
+          "total_photo_count": 1,
+          "has_kudoed": false,
+          "suffer_score": 23
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Lunch Ride",
+          "distance": 23525.3,
+          "moving_time": 4317,
+          "elapsed_time": 6647,
+          "total_elevation_gain": 181,
+          "type": "Ride",
+          "sport_type": "Ride",
+          "workout_type": null,
+          "device_name": "Garmin Edge 830",
+          "id": 17650817807,
+          "start_date": "2026-03-08T10:54:40Z",
+          "start_date_local": "2026-03-08T11:54:40Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 31,
+          "kudos_count": 4,
+          "comment_count": 0,
+          "athlete_count": 2,
+          "photo_count": 0,
+          "map": {
+            "id": "a17650817807",
+            "summary_polyline": "qxqdHgbmeAjAKHEGc@m@CCG~@[hAq@nB_AJSB]?e@WcAg@iG]gCa@iG?w@QSo@[s@QQIAGb@sDLo@N{Af@qMNwI~@cGXwFTmCr@aFZeBAg@Ec@Mg@eAyCC]DYt@kB`Ay@^GLBr@b@bJdIb@XVHpADd@f@vA~B^\\ZBPMP[b@qAMy@i@y@]y@Ga@?q@TuEHqGKsHe@gHFoCXcBT{@pDkKx@qBdDuGX]j@uA|EqEzA}AlEmGbBkBnBaBPUBa@LMn@HXAtARtSdAlVt@zEVrKPbM^lOl@vFFbKd@tSb@lPj@fAHrO^rh@dB`MTzDPtIPdL`@nB?ZHfADnAOl@RRXNl@v@Cd@YPQRINAvOj@ZKL]F_@f@yEH_@P[jAo@|Aq@pCaApAk@bDmAzKyDfDgBl@c@v@[pBUlAo@d@SlG_CjA_@~F}BXE\\PdAxBT\\VXl@Nh@Kb@[VENMt@eBTcAf@iDHUl@[rI{CxE{A^ShAa@pH}BdDmAP?LJDHPjAR~B\\`FVtCHVf@z@Lt@PlE\\dFTlB~@vEfAvEn@xC~ArJp@lFDFhOm@bD`@~DExAFdBj@`Dl@tBZjDTpAP~Et@zAd@tBvAbAj@bDpCvA`AnAbAP@PL|BvBxAr@|AnAx@v@x@p@fBfA~BbBdE~Cn@^fA~@\\`@lAl@hA|@n@\\RXTPn@\\h@f@bAt@fLlHfK`H`O`Jt@n@hArApDnCxAtAr@bAb@|@x@lBFb@TPfBxDXz@Lh@NlALrAd@jONpBJj@j@~BRb@Pp@vAdCfCzDxBvBnAzAt@fAR~@d@xAh@tBb@pAxAvDlCzHp@xBr@jCpK~l@bChQvAlIJjAHvICvA[pBC`@GzC?lARl@`@b@bAL~@X|ArAZh@^bA`@jBHn@@lBKvD}A|SKjB?t@Df@NbAx@dCNn@Df@FhCN`Cn@hFl@|BhBnKXhAh@hBLv@HpB?zDNdDK`BDTTTHV\\dB@^h@jEJ~AA~EBhBL`BhAlElBvIjBnHBTDJTPLTV~@fApHZpClClQT`APb@`@p@r@l@ZLl@FbAK`@FPNFNDZEd@YrA[`AeA~B[dB[fAU^[ZoCvA]^Wf@GTGnABRF\\HTj@x@^VdA\\~FfA~CVbAXlAH~Aj@f@?hAc@NE\\FP\\DREh@Qd@g@n@cAx@y@d@{AzA",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            48.103666,
+            11.540303
+          ],
+          "end_latlng": [
+            47.973632,
+            11.477766
+          ],
+          "average_speed": 5.449,
+          "max_speed": 16.18,
+          "average_temp": 17,
+          "average_watts": 74.5,
+          "device_watts": false,
+          "kilojoules": 321.6,
+          "has_heartrate": true,
+          "average_heartrate": 132.3,
+          "max_heartrate": 181,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 683.8,
+          "elev_low": 527.2,
+          "upload_id": 18749063530,
+          "upload_id_str": "18749063530",
+          "external_id": "garmin_ping_543836936654",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 29
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Evening HIIT",
+          "distance": 0,
+          "moving_time": 2049,
+          "elapsed_time": 2049,
+          "total_elevation_gain": 0,
+          "type": "Workout",
+          "sport_type": "HighIntensityIntervalTraining",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17627696788,
+          "start_date": "2026-03-06T18:06:42Z",
+          "start_date_local": "2026-03-06T19:06:42Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17627696788",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 169.9,
+          "max_heartrate": 190,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18725686466,
+          "upload_id_str": "18725686466",
+          "external_id": "F6443990-BD2B-4965-81DD-28DF3DB308EA.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 76
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2505,
+          "elapsed_time": 2505,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17615382741,
+          "start_date": "2026-03-05T16:24:18Z",
+          "start_date_local": "2026-03-05T17:24:18Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17615382741",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 131.4,
+          "max_heartrate": 160,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18713314688,
+          "upload_id_str": "18713314688",
+          "external_id": "A3D46FF2-5431-415D-8A22-6C7A84B1EE72.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 13
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Evening Ride",
+          "distance": 19530,
+          "moving_time": 3112,
+          "elapsed_time": 3454,
+          "total_elevation_gain": 96.2,
+          "type": "Ride",
+          "sport_type": "Ride",
+          "workout_type": 10,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17591580235,
+          "start_date": "2026-03-03T17:11:39Z",
+          "start_date_local": "2026-03-03T18:11:39Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 12,
+          "kudos_count": 4,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17591580235",
+            "summary_polyline": "_hsdHw}keAG}@EiBIsEU_E?k@H_@Tc@d@_@dEgAz@Yf@YPOHKDs@DKRE`GQtIq@VGrCgAdAYzA[x@OdAK|DS\\I\\Sd@OhBWbAIlEMnBAhAFvD`@bBZv@BrBMn@Ap@Fr@Nl@VxAx@rE|D|CnBXLB?JIHCvBF`IlA`AJhBHbCA|@Bn@DrFh@j@Zf@d@PJpBv@JFBDFAVHbAd@hAn@jF|Bx@ZN@HALMLSRm@LMNCN@TR~AbArAnAfAp@p@\\z@l@TTf@h@Zb@zBbEnAlBRJ^Hn@?`@KPKNQlA}BnCcE|@_Az@o@nCaBp@WRMX[b@q@XeAHcAFsBEgCD]J]@cASsF[uFKsAQ]EOCmAIa@EGSBk@TIH?L@FHJJ@`Bc@d@GPIZYf@{@`@a@|AaAdA}@v@WhAu@h@YPOd@k@VUDMLyC^cGFUDm@H[N_@h@_AzJqMzAwB~IoLdBwBz@kAhJsPfE{HjDiGpNgWTULGjBm@hX{JvIiD|XaK~JyD|EcBjBk@XSJOBIAUKWa@g@IEQESBk@Na@@aFScEIw^gAeJQ}I]cM_@cBIy@AcHY_IWwDIcTq@sEKoL_@}Oa@eCKiACuPi@iCC{Pm@mPe@_HUiKm@iEQwDYc@AKDGJCXGP_CjB}@|@gE`GaBlBcAbAoD~CSJQEMDQp@uCvFq@xAiElLo@zB[dBOvC@~AZ`IFlC?hEMnF?vBBn@Ll@Td@~@lAJV?JET_@|@QTIDKBKCoBuCk@m@KGOCeA@QEQIgHqGcByA[SOEM?MDgA`AQXc@nAQPC?EEBUBv@DPrA~DJt@?b@eApGUdCQ`F[vC_@pBIv@EfAAzDQrCe@~LOx@Wr@K^k@~C@@VBD@I`@@FBBn@B`APXPHTJpBRzC\\rC`@pFHf@Pn@@j@E^ORiA^[ZOHsBj@ORIT_A@eBAgAHgATqAp@c@PwA\\}DLsN~@CBJhABf@CPU\\UPo@Z_APyCr@ID]^OVGPET?X@\\LxAF`BFj@H`GPjFApAXdK",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            48.108824,
+            11.534155
+          ],
+          "end_latlng": [
+            48.109065,
+            11.530631
+          ],
+          "average_speed": 6.276,
+          "max_speed": 11.08,
+          "average_watts": 95.5,
+          "device_watts": false,
+          "kilojoules": 297,
+          "has_heartrate": true,
+          "average_heartrate": 127.7,
+          "max_heartrate": 162,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 579.6,
+          "elev_low": 526,
+          "upload_id": 18689487165,
+          "upload_id_str": "18689487165",
+          "external_id": "1C53C5DD-0F8E-40D6-B481-4E76493848C6.fit",
+          "from_accepted_tag": false,
+          "pr_count": 2,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 18
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2962,
+          "elapsed_time": 2962,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17578004565,
+          "start_date": "2026-03-02T16:31:12Z",
+          "start_date_local": "2026-03-02T17:31:12Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17578004565",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 108.2,
+          "max_heartrate": 145,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18675865916,
+          "upload_id_str": "18675865916",
+          "external_id": "2AF5DDBF-051D-49EB-AFF4-F86D4BE7B7FD.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 8
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Rock Climb",
+          "distance": 0,
+          "moving_time": 2621,
+          "elapsed_time": 2621,
+          "total_elevation_gain": 0,
+          "type": "RockClimbing",
+          "sport_type": "RockClimbing",
+          "workout_type": 28,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17578004556,
+          "start_date": "2026-03-01T13:39:23Z",
+          "start_date_local": "2026-03-01T14:39:23Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17578004556",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 113.5,
+          "max_heartrate": 169,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18675865925,
+          "upload_id_str": "18675865925",
+          "external_id": "EC5E828E-7C41-49C0-88DA-BB7951654232.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 9
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Ride",
+          "distance": 21434,
+          "moving_time": 2858,
+          "elapsed_time": 2945,
+          "total_elevation_gain": 96,
+          "type": "Ride",
+          "sport_type": "Ride",
+          "workout_type": null,
+          "device_name": "Garmin Edge 830",
+          "id": 17554421916,
+          "start_date": "2026-02-28T14:41:29Z",
+          "start_date_local": "2026-02-28T15:41:29Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 6,
+          "kudos_count": 5,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17554421916",
+            "summary_polyline": "wv}cHy|fdAaGg@uAQe@CMW?gCf@uJ@}EDwGBg@L}FIuCIi@Em@YeV?sDDw@Nm@NUNIj@KDUFgD?oHFaCFaB\\cDTsAZuA^u@p@o@PYJ]BSCc@CQ{@uCOw@SuBOwCKs@i@eCq@uBWkAI{@Cc@@iAJqBL{ALkBJ{F?gCa@uOKiAWsAk@aBiAmC{@_BqAwBkAuBeBqDo@aBUu@m@kC]gCSkDBkNQuDW}COcE{@uNg@aGc@gE}@_HWeAGUc@u@y@s@_Bq@w@m@_@k@_AgCeCwH{@_C_AuBcLcTSYoAwAUQe@OuCcBm@_@Y]y@qAmA}BY_@c@i@{AqASYWk@gBaDq@_AeRmToTiXgDgDcG}F_BwAoBqBy@cA_AaAsAoBoAwBqCoEYc@}@aAo@k@a@WiAo@oB_AiBq@wH{BaA]_@QyAcAcB{AuF{G_G}GaBuAm@_@kCsAgBmA{CyBwCkC{ByBsDoEaBcCoAuBcB_DyA{CqA}Ci@}AaFqO_AiCyAgDkBsDq@yAeDoIgBwD{HyMyAaC}BoD_E{FyA{BmEsHmDiFiAmBwAcCeAuBqAiCiB}DmCcEw@sAECGAIJEX[h@kAjCi@dAwAhD_DvGiChGQJwEm@q@K[IsAQk@CqBUsHcAiGw@_S_CwAS{Dc@iAS]WwOgSoGoIiCqDmOwRgIwK_@c@c@q@mF{GkDwEsAaBqC}DeG{Hy@mAqAoAi@s@c@e@cF}EyJ{I{CyCs@u@gBaBuBuBaAgAQ[]]mBaA}Ak@a@YCSJk@Au@`@eBDgAC[OOmAs@cD{BcDeBIKEKEa@j@}CEQWQe@Si@i@GUA]Bq@b@sCFkAEoCHaAKaAKYEMSEyALyCHaAEsAUc@Kc@S}@k@oBcB_@Q_BkA_@k@y@mBoCoHaEyJkBkE}@aCyDkJcAoCy@kBg@yA}@{Cm@mCK_ACk@@}@Bi@Ha@zAoD@c@oAsDwAqD[q@a@i@KI{@_@{CeAgBeAm@UuA[USS_@uBuFeAgCs@qBw@_Bg@gAQg@s@{As@gBaDoH{@yB]eAi@yAgDaIqCkHgCaG@OBGpAyAZc@Xy@D[Du@LWHa@Oe@DcQ",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            47.996327,
+            11.34276
+          ],
+          "end_latlng": [
+            48.109759,
+            11.5267
+          ],
+          "average_speed": 7.5,
+          "max_speed": 11.62,
+          "average_temp": 13,
+          "average_watts": 104.4,
+          "device_watts": false,
+          "kilojoules": 298.4,
+          "has_heartrate": true,
+          "average_heartrate": 162.3,
+          "max_heartrate": 186,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 651.6,
+          "elev_low": 545.8,
+          "upload_id": 18652041599,
+          "upload_id_str": "18652041599",
+          "external_id": "garmin_ping_540710388068",
+          "from_accepted_tag": false,
+          "pr_count": 1,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 79
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Lunch Ride",
+          "distance": 28588,
+          "moving_time": 5870,
+          "elapsed_time": 12550,
+          "total_elevation_gain": 189,
+          "type": "Ride",
+          "sport_type": "Ride",
+          "workout_type": null,
+          "device_name": "Garmin Edge 830",
+          "id": 17554421885,
+          "start_date": "2026-02-28T11:00:17Z",
+          "start_date_local": "2026-02-28T12:00:17Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 3,
+          "comment_count": 0,
+          "athlete_count": 2,
+          "photo_count": 0,
+          "map": {
+            "id": "a17554421885",
+            "summary_polyline": "ofsdH{|geAvAnDnFtMjDbIrI`TTNzA^rAl@~A|@rDnAn@n@~@xBhCtGCb@qAdEYjBC~@PrAj@dCfAjDfM|Zz@jB|AhEnDnIbApCvA~C|BbBlC|BlAj@fBZjABjBGbC[TDL|AO~CHbBEfAW`BIlABh@FNrAp@RXc@pCCh@BRVVdCrAvGtEDPAVaAfFSn@Vb@rFrCjA^\\VjSdS~@r@lHfHzBjBlAnAlCtDxGlIvBzCnB|B~A`CrBpC~EjGxArBfBvBpBlCvCdEdIrKzGnIrKhN~EtGv@z@|`AxL\\Sj@kArE{JjGeNRSL@LJp@lAnBrCrErJtCbFpOtVbBvBfDhFhN|U`BnDvCvHbAzB|BnEz@vBnEfNfCbH|B~ExC|FbBdCXx@P?dBzBjCvCdEzDrEhDzFdDbAr@nCxCzItK`C~BjAv@fB~@dIdC`DnAjCzAnBhBv@bA|BrD~AtCbAtAvHjIdEtDdFbFzStWdRlTh@v@f@f@XPbCnEnChC|CrFpAbA`E|BtA~AdD|FtH|NzBhGfCjIp@hA`A|@x@h@JKb@Jn@|@h@nATfA`ArHZxCh@hHdA|SLxERxCA|KBbBP`ANlBh@|CjAtDdAzBjBrDlCfEn@xAv@tBTvAHPj@d@HTBxBT|GIn@BtCErEMxDWjEGrCJvALv@dBjGJr@ZjEN|Ad@lBd@xAD^CXGTYb@}@v@MViAxFQnDG~C?hHOzDw@^Wj@KdAVb[NxBJhCKdEF`@TGGAYl@I`@@~FCrEEfCQzBE`BEj@AdC@TFJdBVrCPdD`@`FXpBVPd@\\~ANpAHvA@vAVlEx@`Db@lAZnAAZs@fASh@@XJNr@`@dAz@fBnBd@NhEl@n@RbHrDjAx@nC`DxClBfKnHVRLTPDDJzAGlB_AbACpGxCfEdCfEpAjB\\`Dx@nDxA~AhARXfClBpBhBhBhBjE`DTZfA|@vCp@bA^rAx@t@v@vB~Cl@h@d@TvCx@nBT~@TbCpArCrA~@TzAJvEp@tDRvCj@dA`@XRTZnEbJHUa@s@g@uAqBuD]i@e@[qAi@uA]gFa@_AO{COoDm@q@[[[m@WeBcAgCk@mBSMOaB]aAc@UQsBiDgBaBcAi@iCu@y@a@mCqB}A{@{EuEkEqDeCgBaDmA_GuAaFyAs@k@_CuA_CiA{CkAy@DkB~@m@?m@S{A_Aa@_@o@YwAiAuI}FmCaDa@]_JsEsFaAk@UqA{AqBsAO[BWv@{AHe@Ig@w@_C",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            48.110492,
+            11.518036
+          ],
+          "end_latlng": [
+            47.996273,
+            11.342457
+          ],
+          "average_speed": 4.87,
+          "max_speed": 11.84,
+          "average_temp": 17,
+          "average_watts": 57.2,
+          "device_watts": false,
+          "kilojoules": 335.7,
+          "has_heartrate": true,
+          "average_heartrate": 121.2,
+          "max_heartrate": 147,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 649.6,
+          "elev_low": 544.4,
+          "upload_id": 18652041620,
+          "upload_id_str": "18652041620",
+          "external_id": "garmin_ping_540710382023",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 21
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Evening Run",
+          "distance": 5460.7,
+          "moving_time": 1899,
+          "elapsed_time": 2099,
+          "total_elevation_gain": 28.2,
+          "type": "Run",
+          "sport_type": "Run",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17544231902,
+          "start_date": "2026-02-27T17:49:41Z",
+          "start_date_local": "2026-02-27T18:49:41Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17544231902",
+            "summary_polyline": "}lsdHmmjeADvAA~AEd@MP@JLLBJKhVDdFCdA?`A@RJf@AJMj@MxAW|@Yj@oA|AGTDRp@vA`A~Bp@fB`@|@Xx@nArCvAvDLVPl@N\\d@`B`@r@JFVIPDt@n@|B|AXT@?BIF_BZeCHSZOl@c@`A]~@MbAEdABvCE|@WfAi@HADBv@lBrAhC\\f@~@`BlAlBp@`AnAzBz@lA|CjDzGzFD@VMBOCU_DkBWYk@a@_A}@c@[cCoCgA}AyC}EeCcE{A}Ci@sAEC[XQTe@\\eAXu@FgADaBCs@DoBTuBf@{Ah@u@LoAPa@Ho@DOS{CkHaCiGsA}C{@aCgAiCGS?KDMvAgB^y@P}@DaAJi@?[Gg@?uGIkB?sAHwE?wBJcJAeF",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "g11022140",
+          "start_latlng": [
+            48.109351,
+            11.530419
+          ],
+          "end_latlng": [
+            48.109402,
+            11.53051
+          ],
+          "average_speed": 2.876,
+          "max_speed": 4.18,
+          "average_watts": 210.5,
+          "max_watts": 377,
+          "weighted_average_watts": 199,
+          "device_watts": true,
+          "kilojoules": 399.8,
+          "has_heartrate": true,
+          "average_heartrate": 172.3,
+          "max_heartrate": 184,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 554.6,
+          "elev_low": 536.2,
+          "upload_id": 18641769747,
+          "upload_id_str": "18641769747",
+          "external_id": "471D6868-57D2-4349-921A-DC73A36EB211.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 76
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 3109,
+          "elapsed_time": 3109,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17532042982,
+          "start_date": "2026-02-26T15:47:55Z",
+          "start_date_local": "2026-02-26T16:47:55Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 0,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17532042982",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 130.9,
+          "max_heartrate": 163,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18629538106,
+          "upload_id_str": "18629538106",
+          "external_id": "53B9A61D-6395-4515-868B-DF587017C65C.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 18
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "MyWhoosh - 64 Min Z2",
+          "distance": 6350.6,
+          "moving_time": 3842,
+          "elapsed_time": 3842,
+          "total_elevation_gain": 418.6,
+          "type": "VirtualRide",
+          "sport_type": "VirtualRide",
+          "device_name": "MyWhoosh",
+          "id": 17510553979,
+          "start_date": "2026-02-24T19:33:28Z",
+          "start_date_local": "2026-02-24T20:33:28Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 2,
+          "photo_count": 0,
+          "map": {
+            "id": "a17510553979",
+            "summary_polyline": "liwOhxgbK}C_AqCq@sBWcAC[Be@HiA^oAh@mCpAgA`@y@Po@B]Cc@IsAc@_EgBkAa@_AWw@Ck@BWFg@Lm@TmBbAgAp@{@`@}@Xm@L_@@qAAo@Gw@OgBk@{BgAoGeDmB{@w@WiA[}@Ms@IcA?o@Dk@F{A^m@RwAl@qAl@aCdAgDhAmBh@wAXuAPoAFaB?_CGaCQmBUiCc@gAYiAa@oD_B}Ak@u@UuAWw@E}A?qBJqCVcBJg@@cBA}AKgAMKEI?cBW_AUw@MICeCe@i@Co@?iAHuAXuA^YLkCv@gAVaAPcBf@}@\\aBv@mBdAcAp@}A|@{Ap@{Ad@gCl@I?iAReAJoA@c@AkAKwBc@iA]E?k@SE?mDmAwAs@_B_AmBuA_DeCw@i@_Ag@uAk@wAc@sAW}@Iy@E_A@",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            -2.747305,
+            -63.451554
+          ],
+          "end_latlng": [
+            -2.694297,
+            -63.449543
+          ],
+          "average_speed": 1.653,
+          "max_speed": 5.78,
+          "average_cadence": 70.3,
+          "average_watts": 95,
+          "max_watts": 111,
+          "weighted_average_watts": 96,
+          "device_watts": true,
+          "kilojoules": 365.2,
+          "has_heartrate": true,
+          "average_heartrate": 141.4,
+          "max_heartrate": 160,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 418.2,
+          "elev_low": -0.4,
+          "upload_id": 18607965848,
+          "upload_id_str": "18607965848",
+          "external_id": "myActivityfile.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 2,
+          "has_kudoed": false,
+          "suffer_score": 39
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2239,
+          "elapsed_time": 2239,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17495767188,
+          "start_date": "2026-02-23T16:04:37Z",
+          "start_date_local": "2026-02-23T17:04:37Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17495767188",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 124.8,
+          "max_heartrate": 151,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18593144728,
+          "upload_id_str": "18593144728",
+          "external_id": "23CF5ADC-E983-4A5C-BA2E-B3E600A25A25.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 8
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Rock Climb",
+          "distance": 0,
+          "moving_time": 2731,
+          "elapsed_time": 2731,
+          "total_elevation_gain": 0,
+          "type": "RockClimbing",
+          "sport_type": "RockClimbing",
+          "workout_type": 28,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17484631010,
+          "start_date": "2026-02-22T13:36:54Z",
+          "start_date_local": "2026-02-22T14:36:54Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 0,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17484631010",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 122.1,
+          "max_heartrate": 168,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18581942566,
+          "upload_id_str": "18581942566",
+          "external_id": "89AF278A-4F51-496A-B5BF-269D03B3DEE4.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 13
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Evening HIIT",
+          "distance": 0,
+          "moving_time": 2052,
+          "elapsed_time": 2052,
+          "total_elevation_gain": 0,
+          "type": "Workout",
+          "sport_type": "HighIntensityIntervalTraining",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17464002718,
+          "start_date": "2026-02-20T18:07:31Z",
+          "start_date_local": "2026-02-20T19:07:31Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17464002718",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 169.8,
+          "max_heartrate": 189,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18561179485,
+          "upload_id_str": "18561179485",
+          "external_id": "0022B111-614F-439D-9591-985D75C7771C.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 75
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2816,
+          "elapsed_time": 2816,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17488160340,
+          "start_date": "2026-02-19T14:35:12Z",
+          "start_date_local": "2026-02-19T15:35:12Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17488160340",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 132.7,
+          "max_heartrate": 169,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18585492821,
+          "upload_id_str": "18585492821",
+          "external_id": "04720F72-ACE0-4A4D-BE65-C298DDE3496D.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 18
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "MyWhoosh - 40 Min Z2",
+          "distance": 7241,
+          "moving_time": 2350,
+          "elapsed_time": 2350,
+          "total_elevation_gain": 224.4,
+          "type": "VirtualRide",
+          "sport_type": "VirtualRide",
+          "device_name": "MyWhoosh",
+          "id": 17436488497,
+          "start_date": "2026-02-18T07:59:01Z",
+          "start_date_local": "2026-02-18T08:59:01Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 1,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17436488497",
+            "summary_polyline": "ab|_Hwk~r@lBhKt@vE^zAZx@LTNPNJRBTCbGcBJAJDJ\\@r@?vAEhEG|NEXORGDe@HuANUFIJENAP?b@NlAVbDJlCHpD?~GKjEIzBEPGFK?gAMsA[e@?UFe@XeBxAKBIEaAuDcAiDk@_BKe@OeAKiAOqDMcBi@{CKWGGI?QRKX}AfFY~@]v@Wd@Y\\iA`A}A`AyEdCgAf@qChAsAp@k@^yAdAa@Va@PoAZs@TgBz@m@d@y@bAc@Ze@HqBDMIIUe@eCeAkGc@}BWy@c@m@SM}BcASOOWI]?c@H_@v@sBT{@P_ABgCG_AI[MYQUOQoBcB_@g@KYC]A_AH}FA{BC{@Gy@_@gC_D}P_@kBsA}FmAiEkAkDuAgDgAuBiAeBgAkAoAgAiAs@{Am@yA]uAK]@SFMJKPM^m@hCW|AKxA@hCM~Ae@lDM\\SVMDK?KCKGIKMg@u@gGgAcHMa@]o@cAeAsAoAkIeHaCuBiCeCiAoAs@q@m@a@s@[m@My@E",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            47.335528,
+            8.518954
+          ],
+          "end_latlng": [
+            47.363954,
+            8.525454
+          ],
+          "average_speed": 3.081,
+          "max_speed": 13.38,
+          "average_cadence": 78.5,
+          "average_watts": 96.9,
+          "max_watts": 108,
+          "weighted_average_watts": 98,
+          "device_watts": true,
+          "kilojoules": 227.8,
+          "has_heartrate": true,
+          "average_heartrate": 148.8,
+          "max_heartrate": 168,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 187.4,
+          "elev_low": 0,
+          "upload_id": 18533584042,
+          "upload_id_str": "18533584042",
+          "external_id": "myActivityfile.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 2,
+          "has_kudoed": false,
+          "suffer_score": 38
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2251,
+          "elapsed_time": 2251,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17417913247,
+          "start_date": "2026-02-16T16:23:30Z",
+          "start_date_local": "2026-02-16T17:23:30Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 0,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17417913247",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 113.1,
+          "max_heartrate": 146,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18514949501,
+          "upload_id_str": "18514949501",
+          "external_id": "0E316CAC-E40F-445D-876E-8A0524830D8C.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 6
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Evening HIIT",
+          "distance": 0,
+          "moving_time": 2062,
+          "elapsed_time": 2062,
+          "total_elevation_gain": 0,
+          "type": "Workout",
+          "sport_type": "HighIntensityIntervalTraining",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17386833765,
+          "start_date": "2026-02-13T18:06:07Z",
+          "start_date_local": "2026-02-13T19:06:07Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17386833765",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 168.9,
+          "max_heartrate": 194,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18483653561,
+          "upload_id_str": "18483653561",
+          "external_id": "95B98AF3-3E9A-4209-B638-4B554419D78B.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 75
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 3666,
+          "elapsed_time": 3666,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17375003869,
+          "start_date": "2026-02-12T15:32:05Z",
+          "start_date_local": "2026-02-12T16:32:05Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17375003869",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 119.7,
+          "max_heartrate": 159,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18471813727,
+          "upload_id_str": "18471813727",
+          "external_id": "6230D07A-0846-445B-B29B-845AD396D135.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 12
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "MyWhoosh - The Mountain's Verdict",
+          "distance": 5149.6,
+          "moving_time": 2341,
+          "elapsed_time": 2341,
+          "total_elevation_gain": 251.8,
+          "type": "VirtualRide",
+          "sport_type": "VirtualRide",
+          "device_name": "MyWhoosh",
+          "id": 17354973516,
+          "start_date": "2026-02-10T19:33:37Z",
+          "start_date_local": "2026-02-10T20:33:37Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 2,
+          "photo_count": 0,
+          "map": {
+            "id": "a17354973516",
+            "summary_polyline": "diwOfxgbKkCy@}Bk@mB[}@Ig@?_@BQDuA`@sFdCw@Xq@N]D]?q@IwAe@wDaByAi@{@Ui@ES?w@Fc@Ha@NgAf@eDjB_@Py@XcANs@?o@Am@Gu@OmBo@eBy@gAm@oE}ByAq@sAe@E?o@U}AWi@EaA?y@Dc@F{A^{Aj@sCrAgBt@aCx@}Bp@oB`@uAPmAFcB?{BGcCQ{C_@yBc@_Cw@iF{ByAc@kASu@E}A?iADwD\\O?sAJk@@aBA{AKgAMMEI?uCe@IEkB_@aBYg@Co@?iAHiARaBd@YLkCv@gAVo@L_B`@w@XwB`A{BnAiBjAyAt@sBv@mAZE?IDa@H",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            -2.747286,
+            -63.451543
+          ],
+          "end_latlng": [
+            -2.704047,
+            -63.452531
+          ],
+          "average_speed": 2.2,
+          "max_speed": 6.16,
+          "average_cadence": 76.9,
+          "average_watts": 103.8,
+          "max_watts": 129,
+          "weighted_average_watts": 105,
+          "device_watts": true,
+          "kilojoules": 243.1,
+          "has_heartrate": true,
+          "average_heartrate": 148.5,
+          "max_heartrate": 168,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 251.4,
+          "elev_low": -0.4,
+          "upload_id": 18451704802,
+          "upload_id_str": "18451704802",
+          "external_id": "myActivityfile.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 2,
+          "has_kudoed": false,
+          "suffer_score": 37
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2606,
+          "elapsed_time": 2606,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17340716881,
+          "start_date": "2026-02-09T15:53:17Z",
+          "start_date_local": "2026-02-09T16:53:17Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17340716881",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 125.6,
+          "max_heartrate": 170,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18437419570,
+          "upload_id_str": "18437419570",
+          "external_id": "5BE5DD44-9400-4B9E-BC98-9AADB47C537A.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 12
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 3479,
+          "elapsed_time": 3479,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17317982626,
+          "start_date": "2026-02-07T13:30:14Z",
+          "start_date_local": "2026-02-07T14:30:14Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17317982626",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 136,
+          "max_heartrate": 181,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18414402328,
+          "upload_id_str": "18414402328",
+          "external_id": "C7B73C78-27CA-45DA-80DC-2C1EBA4B3383.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 26
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon HIIT",
+          "distance": 0,
+          "moving_time": 2028,
+          "elapsed_time": 2028,
+          "total_elevation_gain": 0,
+          "type": "Workout",
+          "sport_type": "HighIntensityIntervalTraining",
+          "workout_type": null,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17307527761,
+          "start_date": "2026-02-06T15:37:04Z",
+          "start_date_local": "2026-02-06T16:37:04Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17307527761",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 173.5,
+          "max_heartrate": 187,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18403834078,
+          "upload_id_str": "18403834078",
+          "external_id": "BB89578A-ACC5-4505-A145-91A6F48E2CCB.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 85
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 3007,
+          "elapsed_time": 3007,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17286557721,
+          "start_date": "2026-02-04T16:18:19Z",
+          "start_date_local": "2026-02-04T17:18:19Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17286557721",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 127.8,
+          "max_heartrate": 158,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18382700430,
+          "upload_id_str": "18382700430",
+          "external_id": "54AC103C-C16A-44CE-B596-7193AE5136D0.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 12
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "MyWhoosh - Zurich",
+          "distance": 7764.8,
+          "moving_time": 2344,
+          "elapsed_time": 2344,
+          "total_elevation_gain": 237.6,
+          "type": "VirtualRide",
+          "sport_type": "VirtualRide",
+          "device_name": "MyWhoosh",
+          "id": 17283979760,
+          "start_date": "2026-02-04T13:21:51Z",
+          "start_date_local": "2026-02-04T14:21:51Z",
+          "timezone": "(GMT+01:00) Europe/Berlin",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 2,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17283979760",
+            "summary_polyline": "ab|_Hwk~r@~AvI`AbGR`ARp@Xn@LRXTHBR@|FaBXGJ@HHF`@@~BKxO?xCC^CNGJQL_@HsALUDIHILCP@x@L|@VhDPlED`D?vEMdFInBCPELiAK{A]WAQ@UDa@Vo@d@}@v@IBIEkBaH]iA]{@Su@SwA[gGOyA]yBOg@GIKEIDMXe@~AKRiAvDc@hAY`@W\\qAdAaCvAgDfBw@^kDvA{@`@aAl@sAbAm@\\[LkAXs@TiB|@k@`@y@dA[TSHWDuBDMOK]q@oDcAcG]}AWw@QUSQqCoAQSK[Ea@Da@V{@h@uAR{@F_@Da@BcBC_AG_@Ys@OSaCsB]i@I[C}@HyG?}AIuBWmBa@eC_@kBaAuF_A{Ei@cCeAgEgAsDq@uBgAoCgA{BeAcB}@mAy@{@}@s@}@k@uAm@gA[sAQy@CSDOFOPQf@s@~CQfAGl@Cn@@~BE`Ae@rDOp@QXYLM?KEIKMY{@{GaAmGOk@[q@a@g@{ByBmL}J{CuCmBqBo@i@a@Yu@Y{@MyLWo@?m@Jm@PmLzD",
+            "resource_state": 2
+          },
+          "trainer": false,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": "b9672808",
+          "start_latlng": [
+            47.335528,
+            8.518957
+          ],
+          "end_latlng": [
+            47.368353,
+            8.523062
+          ],
+          "average_speed": 3.313,
+          "max_speed": 13.28,
+          "average_cadence": 78.4,
+          "average_watts": 104,
+          "max_watts": 118,
+          "weighted_average_watts": 105,
+          "device_watts": true,
+          "kilojoules": 243.8,
+          "has_heartrate": true,
+          "average_heartrate": 152.1,
+          "max_heartrate": 174,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 197.6,
+          "elev_low": 0,
+          "upload_id": 18380102791,
+          "upload_id_str": "18380102791",
+          "external_id": "myActivityfile.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 2,
+          "has_kudoed": false,
+          "suffer_score": 45
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2984,
+          "elapsed_time": 2984,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17262045505,
+          "start_date": "2026-02-02T16:04:05Z",
+          "start_date_local": "2026-02-02T17:04:05Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 0,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17262045505",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 123.2,
+          "max_heartrate": 159,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18358045896,
+          "upload_id_str": "18358045896",
+          "external_id": "44EFF216-3F6E-44F6-9725-EC943AC90ED8.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 13
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "resource_state": 2,
+          "athlete": {
+            "id": 58811558,
+            "resource_state": 1
+          },
+          "name": "Afternoon Weight Training",
+          "distance": 0,
+          "moving_time": 2666,
+          "elapsed_time": 2666,
+          "total_elevation_gain": 0,
+          "type": "WeightTraining",
+          "sport_type": "WeightTraining",
+          "workout_type": 30,
+          "device_name": "Apple Watch Ultra 2",
+          "id": 17205421061,
+          "start_date": "2026-01-28T12:37:04Z",
+          "start_date_local": "2026-01-28T13:37:04Z",
+          "timezone": "(GMT+01:00) Africa/Algiers",
+          "utc_offset": 3600,
+          "location_city": null,
+          "location_state": null,
+          "location_country": null,
+          "achievement_count": 0,
+          "kudos_count": 1,
+          "comment_count": 0,
+          "athlete_count": 1,
+          "photo_count": 0,
+          "map": {
+            "id": "a17205421061",
+            "summary_polyline": "",
+            "resource_state": 2
+          },
+          "trainer": true,
+          "commute": false,
+          "manual": false,
+          "private": false,
+          "visibility": "followers_only",
+          "flagged": false,
+          "gear_id": null,
+          "start_latlng": [],
+          "end_latlng": [],
+          "average_speed": 0,
+          "max_speed": 0,
+          "has_heartrate": true,
+          "average_heartrate": 121.1,
+          "max_heartrate": 152,
+          "heartrate_opt_out": true,
+          "display_hide_heartrate_option": true,
+          "elev_high": 0,
+          "elev_low": 0,
+          "upload_id": 18300947626,
+          "upload_id_str": "18300947626",
+          "external_id": "DF589AED-1390-4276-8012-9D6C9F4C5D7E.fit",
+          "from_accepted_tag": false,
+          "pr_count": 0,
+          "total_photo_count": 0,
+          "has_kudoed": false,
+          "suffer_score": 9
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Clean Strava Payload": [
+      {
+        "json": {
+          "stravaActivities": [
+            {
+              "sport_type": "Run",
+              "duration": 32,
+              "date": "2026-03-25T13:22:32Z",
+              "suffer_score": 59,
+              "load": 368.1
+            },
+            {
+              "sport_type": "Walk",
+              "duration": 46,
+              "date": "2026-03-20T19:22:04Z",
+              "suffer_score": 6
+            },
+            {
+              "sport_type": "GravelRide",
+              "duration": 62,
+              "date": "2026-03-08T13:30:50Z",
+              "suffer_score": 23,
+              "load": 211.2
+            },
+            {
+              "sport_type": "Ride",
+              "duration": 71,
+              "date": "2026-03-08T10:54:40Z",
+              "suffer_score": 29,
+              "load": 321.6
+            },
+            {
+              "sport_type": "HighIntensityIntervalTraining",
+              "duration": 34,
+              "date": "2026-03-06T18:06:42Z",
+              "suffer_score": 76
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 41,
+              "date": "2026-03-05T16:24:18Z",
+              "suffer_score": 13
+            },
+            {
+              "sport_type": "Ride",
+              "duration": 51,
+              "date": "2026-03-03T17:11:39Z",
+              "suffer_score": 18,
+              "load": 297
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 49,
+              "date": "2026-03-02T16:31:12Z",
+              "suffer_score": 8
+            },
+            {
+              "sport_type": "RockClimbing",
+              "duration": 43,
+              "date": "2026-03-01T13:39:23Z",
+              "suffer_score": 9
+            },
+            {
+              "sport_type": "Ride",
+              "duration": 47,
+              "date": "2026-02-28T14:41:29Z",
+              "suffer_score": 79,
+              "load": 298.4
+            },
+            {
+              "sport_type": "Ride",
+              "duration": 97,
+              "date": "2026-02-28T11:00:17Z",
+              "suffer_score": 21,
+              "load": 335.7
+            },
+            {
+              "sport_type": "Run",
+              "duration": 31,
+              "date": "2026-02-27T17:49:41Z",
+              "suffer_score": 76,
+              "load": 399.8
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 51,
+              "date": "2026-02-26T15:47:55Z",
+              "suffer_score": 18
+            },
+            {
+              "sport_type": "VirtualRide",
+              "duration": 64,
+              "date": "2026-02-24T19:33:28Z",
+              "suffer_score": 39,
+              "load": 365.2
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 37,
+              "date": "2026-02-23T16:04:37Z",
+              "suffer_score": 8
+            },
+            {
+              "sport_type": "RockClimbing",
+              "duration": 45,
+              "date": "2026-02-22T13:36:54Z",
+              "suffer_score": 13
+            },
+            {
+              "sport_type": "HighIntensityIntervalTraining",
+              "duration": 34,
+              "date": "2026-02-20T18:07:31Z",
+              "suffer_score": 75
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 46,
+              "date": "2026-02-19T14:35:12Z",
+              "suffer_score": 18
+            },
+            {
+              "sport_type": "VirtualRide",
+              "duration": 39,
+              "date": "2026-02-18T07:59:01Z",
+              "suffer_score": 38,
+              "load": 227.8
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 37,
+              "date": "2026-02-16T16:23:30Z",
+              "suffer_score": 6
+            },
+            {
+              "sport_type": "HighIntensityIntervalTraining",
+              "duration": 34,
+              "date": "2026-02-13T18:06:07Z",
+              "suffer_score": 75
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 61,
+              "date": "2026-02-12T15:32:05Z",
+              "suffer_score": 12
+            },
+            {
+              "sport_type": "VirtualRide",
+              "duration": 39,
+              "date": "2026-02-10T19:33:37Z",
+              "suffer_score": 37,
+              "load": 243.1
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 43,
+              "date": "2026-02-09T15:53:17Z",
+              "suffer_score": 12
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 57,
+              "date": "2026-02-07T13:30:14Z",
+              "suffer_score": 26
+            },
+            {
+              "sport_type": "HighIntensityIntervalTraining",
+              "duration": 33,
+              "date": "2026-02-06T15:37:04Z",
+              "suffer_score": 85
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 50,
+              "date": "2026-02-04T16:18:19Z",
+              "suffer_score": 12
+            },
+            {
+              "sport_type": "VirtualRide",
+              "duration": 39,
+              "date": "2026-02-04T13:21:51Z",
+              "suffer_score": 45,
+              "load": 243.8
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 49,
+              "date": "2026-02-02T16:04:05Z",
+              "suffer_score": 13
+            },
+            {
+              "sport_type": "WeightTraining",
+              "duration": 44,
+              "date": "2026-01-28T12:37:04Z",
+              "suffer_score": 9
+            }
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Workout Recommendation Agent": [
+      {
+        "json": {
+          "output": {
+            "title": "Daniel’s 3-Month Lean-Down Performance Plan 🏁",
+            "dates": "Program window: 2026-03-29 to 2026-06-27",
+            "overview": "Hey Daniel — welcome to the program 👋\n\nYou’ve got a strong training background, a flexible work-from-home setup, a full gym, and a standing Friday HIIT date with friends, which is honestly a pretty efficient way to make suffering social. Based on your goal order — leanness first, endurance second, strength third — I’ve mapped your 3-month plan into 3 phases that keep your physique intact while pushing body-fat reduction with enough cardio to matter and enough strength work to avoid looking like you accidentally misplaced your muscle.\n\nI also used your recent history to shape this: you’re already training across strength, cycling, HIIT, running, and climbing, so this won’t be a random personality transplant. That said, your left knee discomfort with higher cardio volume means we’ll bias lower-impact conditioning a bit more than your ambition might prefer. Safety wins; ego can sit quietly in the corner.\n\nBecause your start date is just ahead, this phase map is set up in advance. Then, each Sunday evening, the weekly plan can plug into this structure.",
+            "assumptions": {
+              "session_length": "Most sessions are planned around 45–75 minutes, with one longer endurance session when useful. Occasional low-risk double days are acceptable because you’re open to them and your schedule is flexible.",
+              "winter_constraint": "You’re in Munich, and although the program starts at the end of March, early-phase conditioning may still lean on indoor cycling/treadmill or controlled outdoor sessions depending on weather and footing. No heroic icy run decisions required.",
+              "strength_approach": "Strength training will prioritize maintenance of muscle and overall physique rather than aggressive hypertrophy, using straightforward sets with no supersets and mostly 2–3 gym sessions per week on weekdays only."
+            },
+            "phases": [
+              {
+                "name": "🌱 Phase 1 — Foundation & Knee-Smart Ramp-Up",
+                "dates": "2026-03-29 to 2026-04-25",
+                "objective": "Re-establish consistent 5-day training rhythm, build calorie-burning volume through controlled conditioning, and lock in strength maintenance without spiking knee irritation.",
+                "weekly_structure": {
+                  "sessions_per_week": 5,
+                  "items": [
+                    "2 weekday strength sessions focused on big lifts and physique maintenance",
+                    "1 low-impact endurance session, preferably cycling or indoor bike",
+                    "1 controlled run or run-alternative aerobic session kept moderate in volume",
+                    "1 Friday HIIT session with friends, managed so it stays hard but not reckless",
+                    "Optional easy bouldering/mobility style session only if recovery is clearly good, not as a sixth hard day"
+                  ],
+                  "optional_add_ons": "Short walks or easy recovery spins can be used between sessions, but weekends stay out of the gym as requested."
+                },
+                "progression_focus": [
+                  "Build consistency before adding load",
+                  "Keep strength numbers relatively stable while trimming overall fatigue",
+                  "Progress aerobic volume mainly through cycling and controlled easy-moderate efforts",
+                  "Cap running volume increases conservatively to protect the left knee"
+                ],
+                "risk_to_manage": [
+                  "Left knee discomfort from too much running or stacked high-impact cardio",
+                  "Going too hard too early because your engine says yes before your joints agree",
+                  "Letting HIIT plus running create hidden fatigue that leaks into strength work"
+                ],
+                "success_signals": [
+                  "You complete 5 sessions most weeks without needing a bailout workout shuffle",
+                  "Knee discomfort stays mild or improves",
+                  "Strength performance is stable on key lifts",
+                  "Cardio feels more repeatable, not just survivable"
+                ]
+              },
+              {
+                "name": "🔥 Phase 2 — Leaning Out & Work Capacity Build",
+                "dates": "2026-04-26 to 2026-05-30",
+                "objective": "Drive the main body-composition push by increasing weekly energy expenditure and work capacity while preserving muscle and keeping endurance progression joint-friendly.",
+                "weekly_structure": {
+                  "sessions_per_week": 5,
+                  "items": [
+                    "2 strength sessions with slightly denser total work but still no supersets",
+                    "1 quality endurance session centered on cycling intervals or tempo work",
+                    "1 aerobic support session that alternates between easy run, bike, or mixed conditioning depending on knee status",
+                    "1 Friday HIIT session with friends as the main weekly high-intensity anchor",
+                    "Bouldering can occasionally replace the aerobic support session when recovery or motivation needs a refresh"
+                  ],
+                  "optional_add_ons": "If recovery is solid, one short same-day easy spin or walk can pair with a strength day to increase expenditure without adding much impact."
+                },
+                "progression_focus": [
+                  "Increase conditioning quality without turning every session into a death march",
+                  "Use low-impact cardio to carry more total work",
+                  "Maintain strength intensity enough to preserve physique",
+                  "Refine exercise selection and weekly flow so hard days stop stepping on each other"
+                ],
+                "risk_to_manage": [
+                  "Accumulated fatigue from intense preference plus social HIIT plus extra cardio",
+                  "Knee flare-ups if running creeps up too fast",
+                  "Dropping strength quality by chasing calorie burn in every session"
+                ],
+                "success_signals": [
+                  "You feel fitter across HIIT and endurance sessions, not just lighter",
+                  "Recovery between hard efforts improves",
+                  "Bodyweight trends modestly downward while gym performance remains mostly intact",
+                  "You’re finishing sessions with something left in the tank instead of seeing your soul leave your body"
+                ]
+              },
+              {
+                "name": "⚡ Phase 3 — Consolidate, Sharpen & Exit Lean",
+                "dates": "2026-05-31 to 2026-06-27",
+                "objective": "Hold the leaner look, keep performance sharp, and reduce unnecessary fatigue so you finish the block looking and performing better rather than crawling over the line.",
+                "weekly_structure": {
+                  "sessions_per_week": 5,
+                  "items": [
+                    "2 strength sessions focused on maintaining load and movement quality with slightly lower total volume",
+                    "1 quality cardio session, mostly bike-based or mixed modal to limit impact",
+                    "1 easier aerobic session for recovery support and energy expenditure",
+                    "1 Friday HIIT session that stays punchy but slightly better controlled than in mid-block",
+                    "Optional light outdoor ride or bouldering when weather and recovery line up, without turning weekends into a bonus training camp"
+                  ],
+                  "optional_add_ons": "Extra activity stays easy and restorative only; this phase is about arriving fresh, not collecting tiredness like a hobby."
+                },
+                "progression_focus": [
+                  "Maintain results with cleaner fatigue management",
+                  "Keep intensity touchpoints while trimming junk volume",
+                  "Protect joints and energy levels as cumulative load peaks",
+                  "Finish with sustainable momentum rather than burnout"
+                ],
+                "risk_to_manage": [
+                  "Trying to squeeze in extra work because the finish line is close",
+                  "Knee irritation from late-block running enthusiasm",
+                  "Carrying too much fatigue into the final weeks and flattening performance"
+                ],
+                "success_signals": [
+                  "You feel sharp rather than stale",
+                  "Strength is still recognizably yours",
+                  "Conditioning sessions stay strong with less mental drag",
+                  "You end the 3 months leaner, lighter, and structurally intact — always a nice touch"
+                ]
+              }
+            ],
+            "closing": "That’s the 3-phase map, Daniel 📬\n\nFrom here, the weekly plans can slot neatly into this structure every Sunday evening: enough intensity to match your preference, enough restraint to respect your knee, and enough strength work to keep your physique from filing a formal complaint. Solid base, hard middle, cleaner finish — simple, effective, and pleasantly free of weekend gym captivity."
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workout Recommendation Agent": {
+      "main": [
+        [
+          {
+            "node": "Formatting Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formatting Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Workout Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Workout Email": {
+      "main": [
+        []
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Clean Strava Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Strava Payload": {
+      "main": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3148703a-a254-4a78-85ee-d3d65311386f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6929029468ff5555008a05dd2c376ff6f2317789ea5edb5ce43fa58b035d951c"
+  },
+  "id": "Cgdzuug3hNINvcvG",
+  "tags": []
+}

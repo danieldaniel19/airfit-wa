@@ -1,0 +1,812 @@
+{
+  "name": "WA_Weekly PUBLIC NO KEYS",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        -32
+      ],
+      "id": "160dd27c-868f-41f4-8ea6-f9a08d5d277c",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Strava History: {{ JSON.stringify($('Merge').item.json.stravaActivities) }}\n\nYour Past Weekly Recommendations (if none/undefined, it's the first week):\n{{ JSON.stringify($('Merged Weekly Plans').item.json.allRows) }}\n\nCompliance scores (if none/undefined, it's the first week):{{ $json.output }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=---Your Role---\n- You're sub-agent part of an AI fitness coach called Airfit. \n- Airfit created a workout program in a previous step (step 1). When Airfit created the program, it broke it down into 3 phases (e.g., ramp up, consolidation, tapper).\n- In stetp 2 (now),  you'll use the phases created in step 1 as reference to help you plan the user's workout week, based on what phase the user is in. You'll determine that by comparing today's date with the phases' dates.\n- You will always run on a Sunday evening. If it's not Sunday, that means I (the admin) am running a one-off test or demoing the product. In that case, act and think like it was the most recent past Sunday. Likewise, if you're being run in a date before the program start date, that also means that I (the admin) am running a test or demo. Default to last sunday as well. If there's a specific date mentioned in your prompt (admin overwrite), stick to that for today's date.\n- Besides planning the week, you will also write a short message welcoming the user to the week and explaining why you came up with those workouts. Each day should be as detailed as possible while staying within boundaries.\n- You won't have access to the user original goal(s), but the agent which generated the program did. Infer user goal(s) from the program created by that agent.\n\n---Plan continuity and compliance---\n- You will also have access to memory of weekly plans you gave the user in the past. If you don't find memory, that means the user is interacting with you for the very first time. Don't make up past interactions.\n- You will also receive a compliance score and compliance notes, which should help you understand how well the user has stuck to your previous plans. Those will be determined by cross-checking past workout plans with workout history for the same period. If the compliance data is \"undefined\", that means you're running for the first time and there's no past data. Don't make up past data.\n- Adjust your recommendations based on past compliance. E.g., if the user exercised less than you recommended the previous week, adjust your recommendation for the current week, helping the user get back on track. If you notice overall compliance trends, extending beyond past week is not likely to help the user to achieve their original goals, make that known.\n- Share compliance data generously with the user. This is how you reward users that take their training seriously and stay compliant and how you alert users that are going off track. You should always open your messages going through compliance (when it applies). Share both compliance scores with the user (program and week).\n\n---Hard Constraints---\n- Don't ever ask the user for input, since this is a one-way communication line. If you need input, make that known but don't expect the user to get back to you.\n- You will keep it to the physical activity domain only, and not make recommendations on adjacent areas, like nutrition.\n\n---Task Details---\n- When you suggest an activity, some types will require different levels of details.\n- Strength Training: Be as detailed as possible, breaking the session into blocks (e.g., warm up, core, cool down etc...). List machines, alternatives and directions. Adjust your recommendations based on what type of gym the user has access to (User's gym type).\n- Try as much as possible to stay consistent when it comes to Strength Training recommendations on different weeks of the same phase. If you see in your past week recommendations that you recommended pull ups or squats in the past weeks, try to recommend that again. Same for number of sets etc. Users shouldn't be doing something completely new every week, unless a big change is required due to compliance gaps or phase shift (make that known if that's the case).\n- For specifically Indoor Cycling, assume the user has access to Zwift/Mywoosh or any equivalent indoor trainer software and can program a workout within that platform. You can then give the user directions for that.\n- For running and cycling, don't use RPE as measure of effort. Stick to either pace or HR zones.\n- HIIT, Functional workouts, Yoga, Pilattes and anything else that sounds like a class: for these, assume the user will take a class. They will be coached by an instructor and there's little to nothing that the user can control, apart from picking the class type. You can guide the user on the class type (e.g. Functional Workout focused on strength).\n\n---Activity Mix---\nKeep to the user's preferred activty mix in mind. If there are no activities from the user's preferred mix in the user's history, assume the user is either coming back to that sport, picking it up for the first time or they just don't track that specific activity with Strava. Adjust your recommendations accordingly but let the user know that you are aware. \n\n---Your Personality---\n- You will adopt a warm but professional tone. You will avoid verbosity and prefer directness. You are motivating through humor, but a Brit style of humor, very contained.\n- You will address the user by their first name.\n- To add warmth and gain trust, make references to the user's circumstances whenever appropriate but as much as possible. It should feel like you're trying to create a bond. Infer those from the program.\n- Use emojies to aid in visual structure (e.g., next to phase names or in a list).\n- Your content will be consumed via email, so include a greeting, like (hi, hello, hey there...).\n\n\n---Generated by you in Step 1---\nAI Program Title: {{ $('Merge').item.json.title }}\nAI Program Dates: {{ $('Merge').item.json.dates }}\nAI Program Overview: {{ $('Merge').item.json.overview }}\nAI assumptions: {{ $('Merge').item.json.assumptions_session_length }} {{ $('Merge').item.json.assumptions_winter_constraint }} {{ $('Merge').item.json.assumptions_strength_approach }}\nAI Phase 1: {{ $('Merge').item.json.phase_1_name }} {{ $('Merge').item.json.phase_1_dates }} {{ $('Merge').item.json.phase_1_objective }} {{ $('Merge').item.json.phase_1_sessions_per_week }} {{ $('Merge').item.json.phase_1_weekly_items_json }} {{ $('Merge').item.json.phase_1_optional_add_ons }} {{ $('Merge').item.json.phase_1_progression_focus_json }} {{ $('Merge').item.json.phase_1_risk_to_manage_json }} {{ $('Merge').item.json.phase_1_success_signals_json }}\nAI Phase 2: {{ $('Merge').item.json.phase_2_name }} {{ $('Merge').item.json.phase_2_dates }} {{ $('Merge').item.json.phase_2_objective }} {{ $('Merge').item.json.phase_2_sessions_per_week }} {{ $('Merge').item.json.phase_2_weekly_items_json }} {{ $('Merge').item.json.phase_2_optional_add_ons }} {{ $('Merge').item.json.phase_2_progression_focus_json }} {{ $('Merge').item.json.phase_2_risk_to_manage_json }} {{ $('Merge').item.json.phase_2_success_signals_json }}\nAI Phase 3: {{ $('Merge').item.json.phase_3_name }} {{ $('Merge').item.json.phase_3_dates }} {{ $('Merge').item.json.phase_3_objective }} {{ $('Merge').item.json.phase_3_sessions_per_week }} {{ $('Merge').item.json.phase_3_weekly_items_json }} {{ $('Merge').item.json.phase_3_optional_add_ons }} {{ $('Merge').item.json.phase_3_progression_focus_json }} {{ $('Merge').item.json.phase_3_risk_to_manage_json }} {{ $('Merge').item.json.phase_3_success_signals_json }}\nProgram created at: {{ $('Merge').item.json.created_at }}\nProgram closing notes: {{ $('Merge').item.json.closing }}"
+        }
+      },
+      "id": "c81d8560-c3b0-4439-a5d2-42cdb8c32246",
+      "name": "Workout Recommendation Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1808,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "responsesApiEnabled": false,
+        "options": {
+          "reasoningEffort": "high",
+          "timeout": 240000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1808,
+        288
+      ],
+      "id": "67985026-9454-4c3e-8bbc-da9bacb2292c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "kzwKUrLswfHybB1a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"week_overview\": \"Today (2026-02-01) puts you in 🧱 Phase 1 — Foundation & Momentum (01-02 → 28-02).** This week stays consistent: **3 strength sessions (no supersets), 1 conditioning builder, 1 HIIT**. You’ve been stacking strength + HIIT already, so we’ll keep the gas on… but aim it.\\n\\n\",\n  \"days\": [\n    {\n      \"day\": \"Mon\",\n      \"title\": \"Strength (Upper A) (60–75 min)\",\n      \"details\": \"Goal: accumulate quality upper volume (chest/back/shoulders/arms) without repeating lower before Thursday.\\nWarm-up (10 min): 5 min easy rower or SkiErg; Band pull-aparts 2×15; Cable external rotations 2×12/side; Scap push-ups 2×10.\\nMain Press: Barbell Bench Press — Ramp 4–5 warm-up sets; 1×5 heavy but clean, then 3×6–8 back-off; Rest 2–3 min; Alt: Hammer Strength chest press.\\nMain Pull: Weighted Pull-ups — 4×5–8; Rest 2–3 min; Alt: Lat pulldown 4×8–10.\\nIncline DB Press — 3×8–12; Rest 90–120s.\\nChest-supported row — 3×8–12; Rest 90–120s.\\nDelts + Arms: Cable lateral raise 3×12–15; Rope triceps pressdown 3×10–12; EZ-bar curls 3×10–12; Rest 60–90s.\\nCool down: Pec stretch + light band work (3–5 min).\"\n    },\n    {\n      \"day\": \"Tue\",\n      \"title\": \"Zwift (Aerobic Base + Cadence) (50–60 min)\",\n      \"details\": \"Goal: build aerobic support for fat loss and recovery.\\nWorkout: 10 min warm-up Zone 2; 3×8 min Zone 2 high with 2 min easy between; 6×30 sec cadence spin-ups (100–110 rpm) @ Zone 2 power with 60 sec easy; 10 min cool down.\\nHR guidance: keep most of the ride in HR Zone 2 with only slight drift upward.\"\n    },\n    {\n      \"day\": \"Wed\",\n      \"title\": \"Rest / Optional Yoga (20–30 min)\",\n      \"details\": \"If Yoga: hips + hamstrings + thoracic spine; keep it easy. Purpose: show up Thursday with legs that work, not legs that complain.\"\n    },\n    {\n      \"day\": \"Thu\",\n      \"title\": \"Strength (Lower A: Squat Focus) (60–70 min)\",\n      \"details\": \"Goal: quad-dominant strength + volume.\\nWarm-up (10–12 min): 5 min bike; Goblet squat 2×8 (2-sec pause); Leg swings 10/10; Glute bridges 2×10.\\nBack Squat: 1×5 smooth heavy + 3×6–8 back-off; Rest 2–3 min; Alt: Hack squat machine 4×8–10.\\nBulgarian split squat (DB): 3×8–10/leg; Rest 90–120s; Alt: Leg press 3×10–12.\\nSeated leg curl: 3×10–12 (2-sec squeeze); Rest 75–90s.\\nStanding calf raise: 4×8–12.\\nCable crunch: 3×10–15.\"\n    },\n    {\n      \"day\": \"Fri\",\n      \"title\": \"HIIT Class (35–45 min)\",\n      \"details\": \"Goal: one high-intensity hit/week.\\nPick a class emphasizing: intervals with rower/bike/ski + kettlebells + bodyweight. Avoid: high-rep barbell to failure themes.\"\n    },\n    {\n      \"day\": \"Sat\",\n      \"title\": \"Strength (Lower B: Hinge/Posterior) (55–70 min)\",\n      \"details\": \"Goal: posterior chain + glutes + hamstrings.\\nWarm-up (10 min): 5 min easy treadmill walk; Bodyweight RDL 2×8; Hip hinge drill with dowel 2×6; Hamstring flossing 8/side.\\nRomanian Deadlift (barbell): 4×6–8; Rest 2–3 min; Alt: Trap bar deadlift 4×5–6.\\nHip thrust: 3×8–10; Rest 2 min.\\n45° back extension (loaded): 3×10–12; Rest 90s; Alt: Cable pull-through 3×12–15.\\nLying leg curl: 3×10–12.\\nPallof press: 3×10–12/side.\"\n    },\n    {\n      \"day\": \"Sun\",\n      \"title\": \"Off\",\n      \"details\": \"Off / rest day.\"\n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1952,
+        288
+      ],
+      "id": "1a93ad49-0ba2-47df-975e-ba889a9dc909",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"week_overview\": \"{{ $json.output.week_overview }}\",\n  \"days\": {{ JSON.stringify($json.output.days) }}\n}",
+        "options": {
+          "systemMessage": "You are an HTML renderer. Output a single, complete HTML document using the template below and the provided JSON input.\n\nHard rules:\n\t•\tOutput ONLY raw HTML. No markdown. No backticks. No explanations.\n\t•\tUse EXACTLY the HTML structure and CSS from the template below. Do not add/remove CSS rules. Do not add external assets.\n\t•\tInsert content from input JSON. Do not invent text.\n\t•\tConvert newline characters in week_overview and details into  tags.\n\t•\tConvert markdown bold markers like this into like this. Do not implement other markdown features.\n\t•\tEscape HTML special characters in all inserted content (& < > “ ’) before inserting, except for the  and  tags you create.\n\t•\tThe number of day cards must equal the number of objects in input.days, in the same order.\n\t•\tIf a field is missing, render it as an empty string (do not omit sections).\n\nTemplate (do not change):\n<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <title>Weekly Plan</title>\n  <style>\n    :root { color-scheme: light; }\n    body { margin:0; background:#f6f7f9; font-family: -apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,Arial,sans-serif; color:#111; }\n    .container { max-width: 760px; margin: 0 auto; padding: 28px 16px; }\n    .header { background:#fff; border:1px solid #e6e8ee; border-radius:16px; padding: 22px 22px 18px; }\n    h1 { font-size: 24px; line-height:1.15; margin: 0 0 10px; }\n    .meta { color:#4b5563; font-size: 14px; }\n    .section { margin-top: 18px; }\n    .section-title { font-size: 18px; margin: 0 0 10px; }\n    .card { background:#fff; border:1px solid #e6e8ee; border-radius:16px; padding: 18px 18px 14px; margin: 12px 0; }\n    .card h3 { margin: 0 0 8px; font-size: 18px; }\n    .sub { color:#4b5563; font-size: 14px; margin-bottom: 10px; }\n    .label { font-weight: 700; }\n    .divider { height:1px; background:#e6e8ee; margin: 18px 0; }\n    .text { white-space: pre-wrap; line-height:1.55; }\n    .footer { color:#6b7280; font-size: 13px; margin-top: 18px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n\n<div class=\"header\">\n  <h1>Weekly Plan</h1>\n  <div class=\"meta\"><span class=\"label\">Week overview</span></div>\n\n  <div class=\"divider\"></div>\n\n  <div class=\"text\">{{WEEK_OVERVIEW_HTML}}</div>\n</div>\n\n<div class=\"section\">\n  <h2 class=\"section-title\">Days</h2>\n\n  {{DAY_CARDS}}\n\n  <div class=\"footer\">— Your coach</div>\n</div>\n\n  </div>\n</body>\n</html>\n\nDay card template (repeat for each day, do not change):\n<div class=\"card\">\n  <h3>{{DAY_NAME}} — {{DAY_TITLE}}</h3>\n  <div class=\"sub\"><span class=\"label\">Details</span></div>\n  <div class=\"text\">{{DAY_DETAILS_HTML}}</div>\n</div>\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2384,
+        80
+      ],
+      "id": "2e595904-a298-4baf-987c-94aacda887c7",
+      "name": "Formatting Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2-codex",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2-codex"
+        },
+        "builtInTools": {},
+        "options": {
+          "timeout": 240000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2384,
+        288
+      ],
+      "id": "a2656eff-8aa4-4c30-9684-37358d53730d",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "kzwKUrLswfHybB1a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').item.json.userEmail }}",
+        "subject": "=Your Weekly Plan is Here!",
+        "message": "={{ $json.output }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Lactic Acid 🧬✨"
+        }
+      },
+      "id": "232e6d59-485c-404e-8d62-345561790cb9",
+      "name": "Send Workout Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2784,
+        80
+      ],
+      "webhookId": "b1d00b8d-01fa-434d-9c6c-565e59c3728f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "LsX2Mk8ZG2EBq7c8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=My Last Strava activities:{{ JSON.stringify($('Merge').item.json.stravaActivities) }}\n\nMy Last Weekly Plans (suggested by you): {{ $('Merged Weekly Plans').item.json.allRows }}\n\nThis week's dates (Monday to Sunday):\n{{ (() => {\n    const today = new Date();\n    const dayOfWeek = today.getUTCDay();\n    const formatDate = (date) => {\n      const year = date.getUTCFullYear();\n      const month = String(date.getUTCMonth() + 1).padStart(2, '0');\n      const day = String(date.getUTCDate()).padStart(2, '0');\n      return `${year}-${month}-${day}`;\n    };\n    const startOfWeek = new Date(today);\n    startOfWeek.setUTCDate(today.getUTCDate() - dayOfWeek + 1);\n    const endOfWeek = new Date(today);\n    endOfWeek.setUTCDate(today.getUTCDate() - dayOfWeek + 7);\n    return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;\n  })()}}",
+        "options": {
+          "systemMessage": "=---Your Role---\n- You're a sub-agent of an AI fitness coach called Airfit. \n- In the step we're in right now, you're comparing the previous plans you generated against what the user actually did and coming up with a program compliance score and notes (long term compliance) and last-week compliance score and notes (short term compliance).\n- These will be used to adjust the plans by another agent downstream. Every week, this other agent will read your scores and use them as a datapoint to decide the best workout plan for the upcoming week. The compliance will help the planner to fine-tune the plan for intensity as well as help the user get back on track if drift is detected.\n- Your output will be consumed by a read-only agent. Don't expect further input, so don't ask for follow ups. If you do, that will confuse the agent downstream and break the program.\n- You don't have direct access to user goals, but you can infer that from the program data you have access to. The program was created by another agent that had access to the goals.\n\n---Task Details---\n- Don't expect strict week day compliance, but rather go by number of the different types of workouts. E.g., you recommended 3 strength sessions on Mon, Wed, Fri, but user did Mon, Tue, Thu -> 100% compliance. Nevertheless, let the user know that you saw that they did the recommended workouts on different days. This builds trust.\n- Provide a program compliance score, based on long term compliance (all past weeks since program start versus all past plans since program start). Program compliance is about user being on or off track with program. If compliance is low, let the user know they're risking not achieving their goal(s). If you think compliance is so low that the user will not achieve their goal(s), make that very explicit and outline how important that message is.\n- Provide a past-week compliance score, based on short term compliance (only past week vs. past week recommendation). This is about how compliant the user was with your last recommendations. Err on the side of strictness for short term compliance.\n- grade the scores from 0 - 5.\n- provide a comment for each score, explaining your reasoning. Highlight grave deviations. \n\n---Program generated by the program agent in a previous step---\nAI Program Title: {{ $('Merge').item.json.title }}\nAI Program Dates: {{ $('Merge').item.json.dates }}\nAI Program Overview: {{ $('Merge').item.json.overview }}\nAI assumptions: {{ $('Merge').item.json.assumptions_session_length }} {{ $('Merge').item.json.assumptions_winter_constraint }} {{ $('Merge').item.json.assumptions_strength_approach }}\nAI Phase 1: {{ $('Merge').item.json.phase_1_name }} {{ $('Merge').item.json.phase_1_dates }} {{ $('Merge').item.json.phase_1_objective }} {{ $('Merge').item.json.phase_1_sessions_per_week }} {{ $('Merge').item.json.phase_1_weekly_items_json }} {{ $('Merge').item.json.phase_1_optional_add_ons }} {{ $('Merge').item.json.phase_1_progression_focus_json }} {{ $('Merge').item.json.phase_1_risk_to_manage_json }} {{ $('Merge').item.json.phase_1_success_signals_json }}\nAI Phase 2: {{ $('Merge').item.json.phase_2_name }} {{ $('Merge').item.json.phase_2_dates }} {{ $('Merge').item.json.phase_2_objective }} {{ $('Merge').item.json.phase_2_sessions_per_week }} {{ $('Merge').item.json.phase_2_weekly_items_json }} {{ $('Merge').item.json.phase_2_optional_add_ons }} {{ $('Merge').item.json.phase_2_progression_focus_json }} {{ $('Merge').item.json.phase_2_risk_to_manage_json }} {{ $('Merge').item.json.phase_2_success_signals_json }}\nAI Phase 3: {{ $('Merge').item.json.phase_3_name }} {{ $('Merge').item.json.phase_3_dates }} {{ $('Merge').item.json.phase_3_objective }} {{ $('Merge').item.json.phase_3_sessions_per_week }} {{ $('Merge').item.json.phase_3_weekly_items_json }} {{ $('Merge').item.json.phase_3_optional_add_ons }} {{ $('Merge').item.json.phase_3_progression_focus_json }} {{ $('Merge').item.json.phase_3_risk_to_manage_json }} {{ $('Merge').item.json.phase_3_success_signals_json }}\nProgram created at: {{ $('Merge').item.json.created_at }}\nProgram updated at: {{ $('Merge').item.json.updated_at }}\nProgram closing notes: {{ $('Merge').item.json.closing }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1328,
+        256
+      ],
+      "id": "7eaf283b-a371-4408-8c5f-7380c471df36",
+      "name": "Workout Compliance Checker"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9cbcdbfe-4131-4a5b-8011-c0ad45755134",
+              "leftValue": "={{ $json.allRows[0] }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1008,
+        -16
+      ],
+      "id": "572f7a27-d1fd-405c-a622-d66c6d24df44",
+      "name": "If - First week?"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5.2",
+          "mode": "list",
+          "cachedResultName": "gpt-5.2"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1328,
+        512
+      ],
+      "id": "f420f44e-5431-439c-90cb-455ccfee54d8",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "kzwKUrLswfHybB1a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst items = $input.all();\n\n// Initialize a single object to store combined data\nconst combinedData = {\n  json: {\n    allRows: items.map(item => item.json)\n  }\n};\n\n// Return the combined data as a single item\nreturn [combinedData];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        320
+      ],
+      "id": "d9b02bb8-16e5-4f2f-9b29-2437a7a29e0e",
+      "name": "Merged Weekly Plans"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "program_active",
+              "condition": "is",
+              "keyValue": "TRUE"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        -16
+      ],
+      "id": "d92f93a9-81da-46f1-9cb5-5113e6c9eeed",
+      "name": "Get many rows - active users",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "strava_connections",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -320
+      ],
+      "id": "15c04755-134d-4339-93f2-066646c80e91",
+      "name": "Get a row - strava connections",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "strava_connections",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows - active users').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "access_token",
+              "fieldValue": "={{ $json.access_token }}"
+            },
+            {
+              "fieldId": "refresh_token",
+              "fieldValue": "={{ $json.refresh_token }}"
+            },
+            {
+              "fieldId": "expires_at",
+              "fieldValue": "={{ $json.expires_at }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -320
+      ],
+      "id": "8d919ce4-f15d-40b1-978e-53cfd0eb65bd",
+      "name": "Update a row - update-tokens",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const activities = $input.all().map((item) => item.json);\n\nconst cleanedData = activities.map((activity) => ({\n  sport_type: activity.sport_type,\n  duration: Math.floor(activity.moving_time / 60),\n  date: activity.start_date,\n  suffer_score: activity.suffer_score,\n  load: activity.kilojoules,\n}));\n\nreturn [{ json: { stravaActivities: cleanedData } }];"
+      },
+      "id": "2a68acba-b15d-42c8-9853-75216c37c0e7",
+      "name": "Clean Strava Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.strava.com/oauth/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_id"
+            },
+            {
+              "name": "client_secret"
+            },
+            {
+              "name": "refresh_token",
+              "value": "={{ $json.refresh_token }}"
+            },
+            {
+              "name": "grant_type",
+              "value": "refresh_token"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -208,
+        -320
+      ],
+      "id": "e80b35d7-9db7-4a50-9b8f-fe9733c70b2a",
+      "name": "HTTP Request - POST refresh tokens"
+    },
+    {
+      "parameters": {
+        "url": "https://www.strava.com/api/v3/athlete/activities",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "per_page",
+              "value": "30"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Update a row - update-tokens').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        -320
+      ],
+      "id": "85de2ca6-81a2-4b6b-810e-ddea60140a2f",
+      "name": "HTTP Request - GET activities"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "programs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_email",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -16
+      ],
+      "id": "5bcab5aa-435f-44f2-8bef-3285ecbe5533",
+      "name": "Get a row - get-programs",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "weekly_workouts",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_email",
+              "condition": "eq",
+              "keyValue": "={{ $json.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        320
+      ],
+      "id": "bae12126-fab3-46cb-ae67-e46494687802",
+      "name": "Get many rows - get-past-workouts",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "weekly_workouts",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_email",
+              "fieldValue": "={{ $('Merge').item.json.user_email }}"
+            },
+            {
+              "fieldId": "week_overview",
+              "fieldValue": "={{ $json.output.week_overview }}"
+            },
+            {
+              "fieldId": "monday",
+              "fieldValue": "={{ $json.output.days[0].details }}"
+            },
+            {
+              "fieldId": "tuesday",
+              "fieldValue": "={{ $json.output.days[1].details }}"
+            },
+            {
+              "fieldId": "wednesday",
+              "fieldValue": "={{ $json.output.days[2].details }}"
+            },
+            {
+              "fieldId": "thursday",
+              "fieldValue": "={{ $json.output.days[3].details }}"
+            },
+            {
+              "fieldId": "friday",
+              "fieldValue": "={{ $json.output.days[4].details }}"
+            },
+            {
+              "fieldId": "saturday",
+              "fieldValue": "={{ $json.output.days[5].details }}"
+            },
+            {
+              "fieldId": "sunday",
+              "fieldValue": "={{ $json.output.days[6].details }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2384,
+        -176
+      ],
+      "id": "1be86127-7738-4c4c-bf3b-7c252d20baab",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "7c4dUpps1mVs7gHn",
+          "name": "Supabase account - la-v2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtHour": 21
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -992,
+        -16
+      ],
+      "id": "2e1eb2e1-7e6d-4727-a9f4-b791ec8291bd",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If - First week?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workout Recommendation Agent": {
+      "main": [
+        [
+          {
+            "node": "Formatting Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formatting Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Workout Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workout Compliance Checker": {
+      "main": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - First week?": {
+      "main": [
+        [
+          {
+            "node": "Workout Recommendation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Workout Compliance Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Workout Compliance Checker",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merged Weekly Plans": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get many rows - active users": {
+      "main": [
+        [
+          {
+            "node": "Get a row - strava connections",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row - get-programs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get many rows - get-past-workouts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row - strava connections": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - POST refresh tokens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row - update-tokens": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - GET activities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - POST refresh tokens": {
+      "main": [
+        [
+          {
+            "node": "Update a row - update-tokens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request - GET activities": {
+      "main": [
+        [
+          {
+            "node": "Clean Strava Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Strava Payload": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row - get-programs": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get many rows - get-past-workouts": {
+      "main": [
+        [
+          {
+            "node": "Merged Weekly Plans",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows - active users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e90290a8-afe1-42b8-a3f5-d6fe66fa1902",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6929029468ff5555008a05dd2c376ff6f2317789ea5edb5ce43fa58b035d951c"
+  },
+  "id": "cGr0UiZR5UP6N6y3",
+  "tags": []
+}
