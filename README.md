@@ -23,10 +23,10 @@ Every Sunday:
 | Backend          | Node.js + Express |
 | Database         | Supabase (Postgres) |
 | Auth             | Custom magic link (no Supabase Auth) |
-| Email            | Resend |
+| Email            | Resend (sender: hello@airfit.fit) |
 | Fitness data     | Strava OAuth API |
 | AI / Automation  | n8n (2 workflows) |
-| Hosting          | Replit |
+| Hosting          | Replit (custom domain: airfit.fit) |
 
 ---
 
@@ -37,14 +37,14 @@ Every Sunday:
 → /signup (email capture → magic link sent)
 → /activate (token validated → session created)
 → /connect-strava (Strava OAuth)
-→ /onboarding (16 screens, 5 sections)
+→ /onboarding (13 screens, 5 sections)
 → n8n WA_Onboarding triggered
-→ /program (active program view)
+→ /program (confirmation screen)
 ```
 
 Weekly:
-- `WA_Weekly` runs every Sunday
-- Sends next week’s plan to all active users
+- `WA_Weekly` runs every Sunday evening
+- Sends next week's plan to all active users
 
 ---
 
@@ -52,13 +52,13 @@ Weekly:
 
 One-shot submission (no draft persistence)
 
-**5 sections · 16 screens**
+**5 sections · 13 screens**
 
 | Section   | Questions |
 |----------|----------|
-| Goals     | Long-term goals, trade-offs, draggable priority ranking |
-| Life      | Training context, days/week, weekend + double-day availability |
-| Intensity | Experience level, aggressiveness, recovery capacity |
+| Goals     | Long-term goals (textarea), tap-to-rank priority (Leanness / Endurance / Strength) |
+| Life      | Days per week, weekend + double-day availability |
+| Intensity | Experience level, aggressiveness preference |
 | Profile   | Height, weight, injury status, location |
 | Training  | Gym access, activities (multi-select), preferences, name |
 
@@ -122,11 +122,8 @@ create table public.onboarding_submissions (
   user_email text not null,
   user_goals text not null,
   goal_priority_order jsonb not null,
-  trade_offs text not null,
-  user_context text not null,
   other_preferences text,
   aggressiveness_preference text not null,
-  recovery_capacity text not null,
   weekends_on boolean not null,
   can_train_twice_same_day boolean not null,
   gym_access text not null,
@@ -190,7 +187,7 @@ create table public.programs (
 | SUPABASE_SERVICE_ROLE_KEY | Supabase service role key |
 | STRAVA_CLIENT_ID | Strava app client ID |
 | STRAVA_CLIENT_SECRET | Strava app client secret |
-| N8N_ONBOARDING_WEBHOOK_URL | WA_Onboarding webhook |
+| N8N_ONBOARDING_WEBHOOK_URL | WA_Onboarding webhook URL |
 | N8N_API_KEY | Webhook auth key |
 | RESEND_API_KEY | Resend API key |
 
@@ -212,7 +209,7 @@ Store exported JSON files in `/n8n`.
 5. Generate structured 3-month program
 6. Parallel:
    - Insert into `programs`
-   - Send HTML email to user
+   - Send HTML email to user via Resend
 
 **Payload (example):**
 ```json
@@ -220,7 +217,7 @@ Store exported JSON files in `/n8n`.
   "userId": "uuid",
   "user_name": "...",
   "user_goals": "...",
-  "goal_priority_order": { "1": "Leanness" },
+  "goal_priority_order": { "1": "Leanness", "2": "Endurance", "3": "Strength" },
   "programStart": "2026-03-29",
   "stravaAccessToken": "<token>"
 }
@@ -228,7 +225,7 @@ Store exported JSON files in `/n8n`.
 
 **Credentials:**
 - Supabase
-- Gmail / SMTP
+- Resend (HTTP Request node)
 
 ---
 
@@ -246,7 +243,7 @@ Store exported JSON files in `/n8n`.
    - First week → plan generation
    - Later weeks → compliance check → plan generation
 7. Format HTML
-8. Send email
+8. Send email via Resend
 
 **Variables required:**
 
@@ -254,6 +251,7 @@ Store exported JSON files in `/n8n`.
 |---------|------------|
 | STRAVA_CLIENT_ID | Strava client ID |
 | STRAVA_CLIENT_SECRET | Strava client secret |
+| RESEND_API_KEY | Resend API key |
 
 ---
 
@@ -274,6 +272,7 @@ Requirements:
 
 - No Supabase Auth (custom magic link flow)
 - Sessions stored in DB (persist across deploys)
-- Strava redirect URI is dynamic → must be registered in Strava app
-- Resend uses test sender by default
+- Strava redirect URI is computed dynamically from the request host — must be registered in Strava app settings. Production uses `airfit.fit`
+- Email sent from `hello@airfit.fit` via Resend
+- App assets (icons, images) stored in `client/src/assets/` and bundled by Vite
 - Minimal UI (no emojis, Geist font)
